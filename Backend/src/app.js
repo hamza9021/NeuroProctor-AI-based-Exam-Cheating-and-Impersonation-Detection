@@ -11,8 +11,16 @@ app.use(
 );
 
 app.get("/", (req, res) => {
-    res.send("Hello World!");
+    res.json({ message: "Welcome to the NeuroProctor API" });
 });
 
+app.get("/health", (req, res) => {
+    res.json({
+        status: "OK",
+        uptime: process.uptime(),
+        timestamp: Date.now(),
+        message: "NeuroProctor API is healthy and running smoothly!",
+    });
+});
 
 export { app };
