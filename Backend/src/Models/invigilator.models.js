@@ -8,6 +8,9 @@ const invigilatorSchema = new Schema(
         phone_number: { type: String, required: true },
         profile_picture: { type: String, required: true },
         status: { type: Boolean, default: false },
+        refreshToken: {
+            type: String,
+        },
     },
     { timestamps: true }
 );

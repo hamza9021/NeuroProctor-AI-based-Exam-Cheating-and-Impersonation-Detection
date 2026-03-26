@@ -6,6 +6,9 @@ const adminSchema = new Schema(
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
         profile_picture: { type: String, required: true },
+        refreshToken: {
+            type: String,
+        },
     },
     { timestamps: true }
 );
