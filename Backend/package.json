@@ -1,0 +1,28 @@
+{
+    "name": "backend",
+    "version": "1.0.0",
+    "description": "NeuroProctor is an AI-powered exam proctoring system that detects cheating and impersonation using computer vision. It integrates YOLO-based object detection, face and gaze tracking, and a rule-based behavior engine with a MERN dashboard to generate real-time risk scores and monitoring reports.",
+    "homepage": "https://github.com/hamza9021/NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection#readme",
+    "bugs": {
+        "url": "https://github.com/hamza9021/NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection/issues"
+    },
+    "type": "module",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hamza9021/NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection.git"
+    },
+    "license": "ISC",
+    "author": "HAMZA RIAZ",
+    "main": "src/index.js",
+    "scripts": {
+        "start": "node ./src/index.js",
+        "dev": "nodemon ./src/index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "dependencies": {
+        "cors": "^2.8.6",
+        "dotenv": "^17.3.1",
+        "express": "^5.2.1",
+        "prettier": "^3.8.1"
+    }
+}
