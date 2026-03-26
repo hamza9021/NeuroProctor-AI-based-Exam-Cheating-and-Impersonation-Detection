@@ -3,12 +3,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 dotenv.config({ path: "./.env" });
 
+// --------OPTIONS IMPORTS--------
+import { corsOptions } from "./options/cors.options.js";
+
 const app = express();
-app.use(
-    cors({
-        origin: "*",
-    })
-);
+app.use(cors(corsOptions));
 
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the NeuroProctor API" });
