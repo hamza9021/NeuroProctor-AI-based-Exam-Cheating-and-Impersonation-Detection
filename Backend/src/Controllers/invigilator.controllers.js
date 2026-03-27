@@ -3,6 +3,8 @@ import { ApiError } from "../Utils/api_error.utils.js";
 import { ApiResponse } from "../Utils/api_response.utils.js";
 import { Invigilator } from "../Models/invigilator.models.js";
 import { uploadOnCloudinary } from "../Services/cloudinary.services.js";
+import { generateAccessAndRefreshToken } from "../Utils/generate_access_and_refresh_token.js";
+import { cookieOptions } from "../options/cookie.options.js";
 
 const registerInvigilator = wrapperFunction(async (req, res) => {
     const { name, email, password, phone_number } = req.body;
@@ -50,4 +52,61 @@ const registerInvigilator = wrapperFunction(async (req, res) => {
         );
 });
 
-export { registerInvigilator };
+const loginInvigilator = wrapperFunction(async (req, res) => {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+        throw new ApiError(400, "Email and password are required");
+    }
+
+    let invigilator = await Invigilator.findOne({ email });
+
+    if (!invigilator) {
+        throw new ApiError(404, "Invigilator not found");
+    }
+
+    if (!(await invigilator.isPasswordMatch(password))) {
+        throw new ApiError(401, "Invalid credentials");
+    }
+
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+        invigilator._id
+    );
+
+    if (!accessToken || !refreshToken) {
+        throw new ApiError(500, "Failed to generate access and refresh token");
+    }
+
+    invigilator = await Invigilator.findOne({ email }).select(
+        "-password -refreshToken"
+    );
+
+    return res
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                invigilator,
+                "Invigilator logged in successfully"
+            )
+        );
+});
+
+const getAllInvigilators = wrapperFunction(async (req, res) => {
+    const invigilators = await Invigilator.find().select(
+        "-password -refreshToken"
+    );
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                invigilators,
+                "Invigilators retrieved successfully"
+            )
+        );
+});
+
+export { registerInvigilator, loginInvigilator, getAllInvigilators };
