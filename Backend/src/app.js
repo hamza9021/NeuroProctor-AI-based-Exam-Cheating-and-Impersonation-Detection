@@ -9,7 +9,7 @@ import { corsOptions } from "./options/cors.options.js";
 
 // --------ROUTES IMPORTS--------
 import { invigilatorRouter } from "./Routes/invigilator.routes.js";
-
+import { adminRouter } from "./Routes/admin.routes.js";
 const app = express();
 app.use(cors(corsOptions));
 app.use(express.json());
@@ -18,6 +18,7 @@ app.use(cookieParser());
 app.use(express.static("./Public"));
 
 app.use("/api/v1/invigilator", invigilatorRouter);
+app.use("/api/v1/admin", adminRouter);
 
 app.get("/", (req, res) => {
     res.json({ message: "Welcome to the NeuroProctor API" });

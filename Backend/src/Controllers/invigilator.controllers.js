@@ -70,7 +70,8 @@ const loginInvigilator = wrapperFunction(async (req, res) => {
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-        invigilator._id
+        invigilator._id,
+        Invigilator
     );
 
     if (!accessToken || !refreshToken) {
@@ -97,8 +98,13 @@ const loginInvigilator = wrapperFunction(async (req, res) => {
 const logoutInvigilator = wrapperFunction(async (req, res) => {
     await Invigilator.findByIdAndUpdate(
         req.invigilator._id,
-        { $set: { refreshToken: undefined } },
-        { new: true }
+        {
+            $unset: { refreshToken: "" },
+        },
+        {
+            returnDocument: "after",
+            runValidators: true,
+        }
     );
 
     res.status(200)
@@ -122,4 +128,9 @@ const getAllInvigilators = wrapperFunction(async (req, res) => {
         );
 });
 
-export { registerInvigilator, loginInvigilator, getAllInvigilators, logoutInvigilator };
+export {
+    registerInvigilator,
+    loginInvigilator,
+    getAllInvigilators,
+    logoutInvigilator,
+};
