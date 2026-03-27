@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config({path: "./.env"});
+
 const corsOptions = {
     origin: [process.env.CORS_ORIGIN, process.env.CORS_LOCAL],
     credentials: process.env.NODE_ENV === "production",
