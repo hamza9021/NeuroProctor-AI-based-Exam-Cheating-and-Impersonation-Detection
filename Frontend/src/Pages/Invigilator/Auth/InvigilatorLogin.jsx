@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { InvigilatorApi } from "../../Api/Invigilator/Invigilator.Api.js";
+import { InvigilatorApi } from "../../../Api/Invigilator/Invigilator.Api.js";
 
 const InvigilatorLogin = () => {
     const navigate = useNavigate();
@@ -88,6 +88,5 @@ const InvigilatorLogin = () => {
         </div>
     );
 };
-
 
 export default InvigilatorLogin;

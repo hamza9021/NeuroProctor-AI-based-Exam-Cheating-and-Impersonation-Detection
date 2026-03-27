@@ -1,6 +1,11 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { InvigilatorRegister, InvigilatorLogin, Home } from "./Pages";
+import {
+    InvigilatorRegister,
+    InvigilatorLogin,
+    AdminLogin,
+    AdminRegister,
+    Home,
+} from "./Pages";
 
 const App = () => {
     return (
@@ -14,6 +19,8 @@ const App = () => {
                     path="/invigilator/login"
                     element={<InvigilatorLogin />}
                 />
+                <Route path="/admin/register" element={<AdminRegister />} />
+                <Route path="/admin/login" element={<AdminLogin />} />
 
                 <Route path="/" element={<Home />} />
             </Routes>
