@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { InvigilatorApi } from "../../Api/Invigilator/Invigilator.Api.js";
 
-const Register = () => {
+const InvigilatorRegister = () => {
     const navigate = useNavigate();
     const invigilatorApi = new InvigilatorApi();
 
@@ -127,4 +127,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default InvigilatorRegister;

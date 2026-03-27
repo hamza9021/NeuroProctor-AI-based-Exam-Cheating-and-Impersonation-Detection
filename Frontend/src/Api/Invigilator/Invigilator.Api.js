@@ -18,6 +18,21 @@ class InvigilatorApi {
         }
     }
 
+    async loginInvigilator(credentials) {
+        try {
+            const response = await this.apiClient.client.post(
+                "/invigilator/login",
+                credentials
+            );
+            console.log("Response Cookies:", response.headers["set-cookie"]);
+            return response.data.data;
+        } catch (error) {
+            console.error("Error logging in invigilator:", error);
+            throw error;
+        }
+    }
+
+
     async getAllInvigilators() {
         try {
             const response = await this.apiClient.client.get("/invigilator/get-all");

@@ -3,7 +3,7 @@ dotenv.config({path: "./.env"});
 
 const corsOptions = {
     origin: [process.env.CORS_ORIGIN, process.env.CORS_LOCAL],
-    credentials: process.env.NODE_ENV === "production",
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
 };

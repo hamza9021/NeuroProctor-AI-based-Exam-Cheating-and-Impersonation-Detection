@@ -1,4 +1,5 @@
-import Register from "./Invigilator/Register.jsx";
+import InvigilatorRegister from "./Invigilator/InvigilatorRegister.jsx";
+import InvigilatorLogin from "./Invigilator/InvigilatorLogin.jsx";
 import Home from "./Home.jsx";
 
-export { Register, Home };
+export { InvigilatorRegister, InvigilatorLogin, Home };

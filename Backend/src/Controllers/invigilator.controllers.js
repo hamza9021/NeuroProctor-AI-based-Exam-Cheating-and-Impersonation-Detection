@@ -54,6 +54,7 @@ const registerInvigilator = wrapperFunction(async (req, res) => {
 
 const loginInvigilator = wrapperFunction(async (req, res) => {
     const { email, password } = req.body;
+    console.log(req.body);
 
     if (!email || !password) {
         throw new ApiError(400, "Email and password are required");
@@ -81,6 +82,8 @@ const loginInvigilator = wrapperFunction(async (req, res) => {
     invigilator = await Invigilator.findOne({ email }).select(
         "-password -refreshToken"
     );
+
+    console.log(accessToken, refreshToken);
 
     return res
         .cookie("accessToken", accessToken, cookieOptions)
