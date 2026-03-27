@@ -94,6 +94,19 @@ const loginInvigilator = wrapperFunction(async (req, res) => {
         );
 });
 
+const logoutInvigilator = wrapperFunction(async (req, res) => {
+    await Invigilator.findByIdAndUpdate(
+        req.invigilator._id,
+        { $set: { refreshToken: undefined } },
+        { new: true }
+    );
+
+    res.status(200)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
+        .json(new ApiResponse(200, {}, "Logout Successfully"));
+});
+
 const getAllInvigilators = wrapperFunction(async (req, res) => {
     const invigilators = await Invigilator.find().select(
         "-password -refreshToken"
@@ -109,4 +122,4 @@ const getAllInvigilators = wrapperFunction(async (req, res) => {
         );
 });
 
-export { registerInvigilator, loginInvigilator, getAllInvigilators };
+export { registerInvigilator, loginInvigilator, getAllInvigilators, logoutInvigilator };

@@ -6,7 +6,6 @@ const generateAccessAndRefreshToken = async (userID) => {
         const invigilator = await Invigilator.findById(userID);
         const accessToken = invigilator.generateAccessToken();
         const refreshToken = invigilator.generateRefreshToken();
-        console.log("Generated Access Token:", accessToken);
         invigilator.refreshToken = refreshToken;
         await invigilator.save({ validateBeforeSave: false });
         return { accessToken, refreshToken };
