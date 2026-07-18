@@ -8,6 +8,4 @@ const corsOptions = {
     credentials: true,
 };
 
-console.log("CORS Options:", corsOptions);
-
 export default corsOptions;

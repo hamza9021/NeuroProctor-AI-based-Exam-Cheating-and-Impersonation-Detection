@@ -4,6 +4,7 @@ dotenv.config({ path: "./.env" });
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import corsOptions from "./Options/cors.options.js";
+import initializeRoutes from "./Routes/index.route.js";
 
 const app = express();
 
@@ -12,5 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: "20kb" }));
 app.use(cookieParser());
 app.use(express.static("./Public"));
+
+initializeRoutes(app);
 
 export default app;
