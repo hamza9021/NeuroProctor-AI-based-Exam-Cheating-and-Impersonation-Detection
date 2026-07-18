@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { wrapperFunction,ApiError } from "../Utils/index.utils.js";
-import  User  from "../Models/user.models.js";
+import { wrapperFunction, ApiError } from "../Utils/index.utils.js";
+import User from "../Models/user.models.js";
 
 const verifyJWT = wrapperFunction(async (req, res, next) => {
     const token = req.cookies.accessToken;
