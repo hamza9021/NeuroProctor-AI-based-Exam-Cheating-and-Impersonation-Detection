@@ -4,6 +4,12 @@ class User {
         const response = await axiosInstance.post("/api/v1/users/register", userData);
         return response.data;
     }
+
+    async login(userData) {
+        const response = await axiosInstance.post("/api/v1/users/login", userData);
+        return response.data;
+    }
+    
 }
 
 

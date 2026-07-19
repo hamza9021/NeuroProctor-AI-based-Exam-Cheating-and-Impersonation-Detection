@@ -1,9 +1,8 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
-import user from "../apis/Users/user.apis";
+import user from "../../apis/Users/user.apis.js";
 
-const Register = () => {
+const Login = () => {
     const {
         register,
         handleSubmit,
@@ -11,18 +10,11 @@ const Register = () => {
     } = useForm();
 
     const { mutate, isLoading, isError, error, isSuccess } = useMutation({
-        mutationFn: (userData) => user.register(userData),
+        mutationFn: (userData) => user.login(userData),
     });
 
     const onSubmit = (userData) => {
-        const formData = new FormData();
-        formData.append("fullName", userData.fullName);
-        formData.append("email", userData.email);
-        formData.append("password", userData.password);
-        formData.append("phoneNumber", userData.phoneNumber);
-        formData.append("role", userData.role);
-        formData.append("profileImage", userData.profileImage[0]);
-        mutate(formData);
+        mutate(userData);
     };
 
     if (isLoading) {
@@ -30,18 +22,13 @@ const Register = () => {
     }
 
     if (isSuccess) {
-        return (
-            <p>
-                Registration successful! Please check your email to verify your
-                account.
-            </p>
-        );
+        return <p>Login successful!</p>;
     }
 
     if (isError) {
         return (
             <p>
-                Error occurred while registering:{" "}
+                Error occurred while Logging:{" "}
                 {error?.stack || error?.message || "Unknown error"}
             </p>
         );
@@ -50,26 +37,9 @@ const Register = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="w-full max-w-md bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-2xl font-bold text-center mb-6">
-                    Register
-                </h2>
+                <h2 className="text-2xl font-bold text-center mb-6">Login</h2>
 
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div>
-                        <label className="block mb-1 font-medium">
-                            Full Name
-                        </label>
-                        <input
-                            className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            {...register("fullName", { required: true })}
-                        />
-                        {errors.fullName && (
-                            <p className="text-red-500 text-sm mt-1">
-                                This field is required
-                            </p>
-                        )}
-                    </div>
-
                     <div>
                         <label className="block mb-1 font-medium">Email</label>
                         <input
@@ -107,24 +77,6 @@ const Register = () => {
                     </div>
 
                     <div>
-                        <label className="block mb-1 font-medium">
-                            Phone Number
-                        </label>
-                        <input
-                            className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            {...register("phoneNumber", {
-                                required: true,
-                                pattern: /^[0-9]{10,15}$/,
-                            })}
-                        />
-                        {errors.phoneNumber && (
-                            <p className="text-red-500 text-sm mt-1">
-                                Please enter a valid phone number
-                            </p>
-                        )}
-                    </div>
-
-                    <div>
                         <label className="block mb-1 font-medium">Role</label>
                         <select
                             className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -141,28 +93,12 @@ const Register = () => {
                         )}
                     </div>
 
-                    <div>
-                        <label className="block mb-1 font-medium">
-                            Profile Image
-                        </label>
-                        <input
-                            type="file"
-                            className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            {...register("profileImage", { required: true })}
-                        />
-                        {errors.profileImage && (
-                            <p className="text-red-500 text-sm mt-1">
-                                Please upload a profile image
-                            </p>
-                        )}
-                    </div>
-
                     <button
                         type="submit"
                         className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
                         disabled={isLoading}
                     >
-                        {isLoading ? "Registering..." : "Register"}
+                        {isLoading ? "Logging..." : "Login"}
                     </button>
                 </form>
             </div>
@@ -170,4 +106,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default Login;
