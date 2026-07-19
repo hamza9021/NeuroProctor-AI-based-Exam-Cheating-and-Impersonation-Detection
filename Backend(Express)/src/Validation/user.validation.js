@@ -12,13 +12,13 @@ const registerValidationSchema = Joi.object({
         .pattern(/^[0-9]{10,15}$/)
         .required(),
 
-    role: Joi.string().valid("user", "admin").required(),
+    role: Joi.string().valid("invigilator", "admin").required(),
 });
 
 const loginValidationSchema = Joi.object({
     email: Joi.string().trim().lowercase().email().required(),
     password: Joi.string().min(8).max(30).required(),
-    role: Joi.string().valid("user", "admin").required(),
+    role: Joi.string().valid("invigilator", "admin").required(),
 });
 
 export { registerValidationSchema, loginValidationSchema };

@@ -1,0 +1,591 @@
+/* ============================================
+   ErrorPage.css — NeuroProctor Error Screen
+   Theme: Black + Purple Gradient
+   ============================================ */
+
+/* ---------- CSS Variables ---------- */
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-card: rgba(15, 13, 26, 0.85);
+  --purple-dark: #1a0a2e;
+  --purple-mid: #4c1d95;
+  --purple-glow: #7c3aed;
+  --purple-light: #a78bfa;
+  --purple-soft: #c4b5fd;
+  --red-accent: #ef4444;
+  --red-glow: rgba(239, 68, 68, 0.3);
+  --text-primary: #e8e4f0;
+  --text-secondary: #a094b8;
+  --text-muted: #6b5e8a;
+  --border-subtle: rgba(124, 58, 237, 0.25);
+  --border-glow: rgba(139, 92, 246, 0.5);
+  --card-shadow: 0 0 60px rgba(124, 58, 237, 0.15), 0 0 120px rgba(76, 29, 149, 0.1);
+}
+
+/* ---------- Container ---------- */
+.error-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, #1a0a2e 0%, #0a0a0f 55%, #05050a 100%);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  padding: 2rem;
+}
+
+/* ---------- Neural Grid Background ---------- */
+.neural-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.06) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+  animation: gridPulse 8s ease-in-out infinite;
+}
+
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* ---------- Floating Particles ---------- */
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: var(--purple-light);
+  border-radius: 50%;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  box-shadow: 0 0 6px var(--purple-glow), 0 0 12px rgba(124, 58, 237, 0.4);
+}
+
+@keyframes floatUp {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+  10% {
+    opacity: 0.8;
+  }
+  90% {
+    opacity: 0.2;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) scale(1.2);
+  }
+}
+
+/* ---------- Glowing Orbs ---------- */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  animation: orbFloat 12s ease-in-out infinite;
+}
+
+.orb-1 {
+  width: 350px;
+  height: 350px;
+  background: rgba(124, 58, 237, 0.12);
+  top: -100px;
+  right: -80px;
+  animation-delay: 0s;
+}
+
+.orb-2 {
+  width: 250px;
+  height: 250px;
+  background: rgba(76, 29, 149, 0.15);
+  bottom: -80px;
+  left: -60px;
+  animation-delay: -4s;
+  animation-duration: 15s;
+}
+
+.orb-3 {
+  width: 200px;
+  height: 200px;
+  background: rgba(139, 92, 246, 0.1);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -8s;
+  animation-duration: 10s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(40px, -30px) scale(1.1); }
+  50% { transform: translate(-20px, 20px) scale(0.9); }
+  75% { transform: translate(-30px, -10px) scale(1.05); }
+}
+
+/* ---------- Main Error Card ---------- */
+.error-card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 2.5rem 2rem 2rem;
+  box-shadow: var(--card-shadow);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.error-card.glitch-active {
+  animation: cardGlitch 0.3s ease;
+}
+
+@keyframes cardGlitch {
+  0% { transform: translate(0); }
+  15% { transform: translate(-3px, 2px); }
+  30% { transform: translate(3px, -1px); }
+  45% { transform: translate(-1px, -2px); }
+  60% { transform: translate(2px, 1px); }
+  75% { transform: translate(-2px, -1px); }
+  100% { transform: translate(0); }
+}
+
+/* Card top accent line */
+.card-accent {
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--purple-mid) 15%,
+    var(--purple-glow) 50%,
+    var(--purple-mid) 85%,
+    transparent
+  );
+  border-radius: 0 0 2px 2px;
+  animation: accentShimmer 3s ease-in-out infinite;
+}
+
+@keyframes accentShimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* ---------- Brain Icon ---------- */
+.icon-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+
+.brain-icon {
+  width: 80px;
+  height: 80px;
+  animation: iconPulse 3s ease-in-out infinite;
+}
+
+.brain-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.brain-path {
+  stroke-dasharray: 300;
+  stroke-dashoffset: 0;
+  animation: drawBrain 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(139, 92, 246, 0.5));
+}
+
+@keyframes drawBrain {
+  0% { stroke-dashoffset: 300; opacity: 0.5; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -300; opacity: 0.5; }
+}
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Neural nodes animation */
+.node {
+  animation: nodeBlink 2s ease-in-out infinite;
+}
+.node-1 { animation-delay: 0s; }
+.node-2 { animation-delay: 0.3s; }
+.node-3 { animation-delay: 0.6s; }
+.node-4 { animation-delay: 0.9s; }
+.node-5 { animation-delay: 1.2s; }
+.node-center { animation-delay: 0.15s; }
+
+@keyframes nodeBlink {
+  0%, 100% { opacity: 0.4; r: 2; }
+  50% { opacity: 1; r: 3.5; }
+}
+
+.conn-line {
+  animation: lineFlicker 3s ease-in-out infinite;
+}
+
+@keyframes lineFlicker {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+.error-x-group {
+  animation: xPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes xPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+/* ---------- Error Code Badge ---------- */
+.error-code-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 auto 1rem;
+  padding: 6px 16px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #fca5a5;
+  text-align: center;
+  width: fit-content;
+}
+
+.code-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red-accent);
+  animation: dotBlink 1s ease-in-out infinite;
+  box-shadow: 0 0 8px var(--red-glow);
+}
+
+@keyframes dotBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ---------- Heading ---------- */
+.error-heading {
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.3rem;
+  color: var(--text-primary);
+}
+
+.heading-glitch {
+  position: relative;
+  display: inline-block;
+}
+
+.heading-glitch::before,
+.heading-glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+}
+
+.heading-glitch::before {
+  color: #ef4444;
+  animation: glitchRed 3s infinite;
+  z-index: -1;
+}
+
+.heading-glitch::after {
+  color: #3b82f6;
+  animation: glitchBlue 3s infinite;
+  z-index: -2;
+}
+
+@keyframes glitchRed {
+  0%, 95%, 100% { opacity: 0; transform: translate(0); }
+  96% { opacity: 0.6; transform: translate(-2px, 1px); }
+  97% { opacity: 0; transform: translate(0); }
+}
+
+@keyframes glitchBlue {
+  0%, 95%, 100% { opacity: 0; transform: translate(0); }
+  96.5% { opacity: 0.6; transform: translate(2px, -1px); }
+  97.5% { opacity: 0; transform: translate(0); }
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 1rem 0 1.2rem;
+}
+
+.divider-line {
+  flex: 1;
+  max-width: 100px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--purple-mid), transparent);
+}
+
+.divider-diamond {
+  width: 6px;
+  height: 6px;
+  background: var(--purple-glow);
+  transform: rotate(45deg);
+  box-shadow: 0 0 8px rgba(124, 58, 237, 0.6);
+  animation: diamondPulse 2s ease-in-out infinite;
+}
+
+@keyframes diamondPulse {
+  0%, 100% { opacity: 0.5; transform: rotate(45deg) scale(0.8); }
+  50% { opacity: 1; transform: rotate(45deg) scale(1.3); }
+}
+
+/* ---------- Message ---------- */
+.message-container {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 1.2rem;
+}
+
+.message-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  animation: iconShake 0.5s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+.message-container:hover .message-icon {
+  animation-play-state: running;
+}
+
+@keyframes iconShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  75% { transform: translateX(2px); }
+}
+
+.error-message {
+  color: #fca5a5;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+  word-break: break-word;
+}
+
+/* ---------- Diagnostic Box ---------- */
+.diagnostic-box {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(124, 58, 237, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.diag-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(124, 58, 237, 0.15);
+}
+
+.diag-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.diag-dot-red { background: #ef4444; }
+.diag-dot-yellow { background: #f59e0b; }
+.diag-dot-green { background: #22c55e; }
+
+.diag-title {
+  margin-left: 6px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.diag-body {
+  padding: 12px 14px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.diag-body p {
+  margin: 0;
+}
+
+.diag-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.diag-critical {
+  color: #ef4444;
+  font-weight: 700;
+  animation: criticalBlink 1s ease-in-out infinite;
+}
+
+@keyframes criticalBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ---------- Buttons ---------- */
+.button-group {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  outline: none;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+  color: #fff;
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+  box-shadow: 0 6px 28px rgba(124, 58, 237, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.3);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+}
+
+.btn-secondary:hover {
+  background: rgba(124, 58, 237, 0.1);
+  border-color: var(--border-glow);
+  box-shadow: 0 4px 16px rgba(124, 58, 237, 0.15);
+}
+
+.btn-secondary:active {
+  background: rgba(124, 58, 237, 0.2);
+}
+
+/* ---------- Footer ---------- */
+.footer-text {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 1.2rem;
+  margin-bottom: 0;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 600px) {
+  .error-card {
+    padding: 2rem 1.25rem 1.5rem;
+    border-radius: 16px;
+  }
+
+  .error-heading {
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+  }
+
+  .brain-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .btn {
+    min-width: 100%;
+  }
+
+  .orb-1 { width: 200px; height: 200px; }
+  .orb-2 { width: 150px; height: 150px; }
+  .orb-3 { width: 120px; height: 120px; }
+}
+
+/* ---------- Reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .particle,
+  .orb,
+  .brain-path,
+  .node,
+  .conn-line,
+  .error-x-group,
+  .neural-grid,
+  .card-accent,
+  .heading-glitch::before,
+  .heading-glitch::after,
+  .divider-diamond,
+  .diag-critical {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .particle { display: none; }
+}
