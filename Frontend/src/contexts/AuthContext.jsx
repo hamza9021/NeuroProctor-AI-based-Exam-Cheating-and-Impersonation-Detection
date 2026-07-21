@@ -24,8 +24,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            // Optional: Call logout API here if you have one
-            // await userApi.logout();
+            await userApi.logout();
         } catch (err) {
             console.error("Logout error:", err);
         } finally {
