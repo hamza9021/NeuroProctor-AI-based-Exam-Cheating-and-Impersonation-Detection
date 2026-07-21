@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import studentApis from "../../apis/Students/student.apis.js";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function StudentsList() {
+    const navigate = useNavigate();
+
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [search, setSearch] = useState("");
@@ -36,6 +38,17 @@ export default function StudentsList() {
             ),
         placeholderData: (previousData) => previousData,
     });
+
+    const {mutate, isPending, isError: deleteError, error: deleteErrorMessage, isLoading: deleteLoading} = useMutation({
+        mutationFn: (studentId) =>
+            studentApis.deleteStudent(studentId),
+    });
+
+    const handleDelete = (studentId) => {
+        if (window.confirm("Are you sure you want to delete this student?")) {
+            mutate(studentId);
+        }
+    };
 
     const students = data?.students || [];
     const total = data?.pagination.total || 0;
@@ -203,27 +216,41 @@ export default function StudentsList() {
                         </tr>
                     ) : (
                         students.map((student) => (
-                            <Link to={`/students/${student.id}`} key={student.id}>
-                                <tr key={student.id}>
-                                    <td><img src={student.profile_image} alt="Error" /></td>
-                                    <td>{student.full_name}</td>
-                                    <td>
-                                        {
-                                            student.registration_number
-                                        }
-                                    </td>
-                                    <td>{student.department}</td>
-                                    <td>{student.email}</td>
-                                    <td>{student.semester}</td>
-                                    <td>
-                                        {student.face_embeddings?.some(
-                                            (face) => face.embedding?.length > 0
-                                        )
-                                            ? "Embedded"
-                                            : "Not Embedded"}
-                                    </td>
-                                </tr></Link>
+                            <tr
+                                key={student.id}
+                                onClick={() => navigate(`/students/${student.id}`)}
+                                style={{ cursor: "pointer" }}
+                            >
+                                <td>
+                                    <img src={student.profile_image} alt="Error" />
+                                </td>
+                                <td>{student.full_name}</td>
+                                <td>{student.registration_number}</td>
+                                <td>{student.department}</td>
+                                <td>{student.email}</td>
+                                <td>{student.semester}</td>
+                                <td>
+                                    {student.face_embeddings?.every(
+                                        (face) => face.quality_score > 0
+                                    )
+                                        ? "Embedded"
+                                        : "Not Embedded"}
+                                </td>
+                                <td>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(
+                                                student.id
+                                            );
+                                        }}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
                         ))
+
                     )}
                 </tbody>
             </table>
