@@ -1,19 +1,27 @@
 import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import studentApis from "../../apis/Students/student.apis.js";
+import Modal from "../ui/Modal";
+import Input from "../ui/Input";
+import Button from "../ui/Button";
 
 const StudentFormModal = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
+  const queryClient = useQueryClient();
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
 
   const { mutate, isLoading, isError, error, isSuccess } = useMutation({
     mutationFn: (studentData) => studentApis.createStudent(studentData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+      reset();
+      onClose();
+    },
   });
 
   const onSubmit = (studentData) => {
@@ -27,159 +35,111 @@ const StudentFormModal = ({ isOpen, onClose }) => {
     mutate(formData);
   };
 
-  if (isLoading) {
-    return <p>Loading...</p>;
-  }
-
-  if (isSuccess) {
-    return (
-      <p>
-        Student Added Successfully!
-        account.
-      </p>
-    );
-  }
-
-  if (isError) {
-    return (
-      <p>
-        Error occurred while registering:{" "}
-        {error?.stack || error?.message || "Unknown error"}
-      </p>
-    );
-  }
+  if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
-        <h2 className="text-2xl font-bold mb-4">Add Student</h2>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Add New Student"
+      size="md"
+    >
+      {isError && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm font-medium text-red-900 mb-1">Failed to add student</p>
+          <p className="text-sm text-red-700">
+            {error?.response?.data?.message || error?.message || "Please check your information and try again."}
+          </p>
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <label className="block mb-1 font-medium">
-              Full Name
-            </label>
-            <input
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...register("full_name", { required: true })}
-            />
-            {errors.full_name && (
-              <p className="text-red-500 text-sm mt-1">
-                This field is required
-              </p>
-            )}
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <Input
+          label="Full Name"
+          placeholder="John Doe"
+          error={errors.full_name ? "This field is required" : ""}
+          {...register("full_name", { required: true })}
+        />
 
-          <div>
-            <label className="block mb-1 font-medium">Email</label>
-            <input
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...register("email", {
-                required: true,
-                pattern: /^\S+@\S+$/,
-              })}
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                Please enter a valid email
-              </p>
-            )}
-          </div>
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          error={errors.email ? "Please enter a valid email" : ""}
+          {...register("email", {
+            required: true,
+            pattern: /^\S+@\S+$/,
+          })}
+        />
 
-          <div>
-            <label className="block mb-1 font-medium">
-              Registration Number
-            </label>
-            <input
-              type="text"
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...register("registration_number", {
-                required: true,
-                pattern: {
-                  value: /^(SP|FA)\d{2}-[A-Z]{2,5}-\d{3}$/,
-                  message: "Format must be like SP23-BCS-183",
-                },
-              })}
-            />
-            {errors.registration_number && (
-              <p className="text-red-500 text-sm mt-1">
-                Please enter a valid registration number
-              </p>
-            )}
-          </div>
+        <Input
+          label="Registration Number"
+          placeholder="SP23-BCS-183"
+          error={errors.registration_number ? "Format must be like SP23-BCS-183" : ""}
+          {...register("registration_number", {
+            required: true,
+            pattern: {
+              value: /^(SP|FA)\d{2}-[A-Z]{2,5}-\d{3}$/,
+              message: "Format must be like SP23-BCS-183",
+            },
+          })}
+        />
 
+        <Input
+          label="Department"
+          placeholder="Computer Science"
+          error={errors.department ? "Please enter department name" : ""}
+          {...register("department", {
+            required: true,
+          })}
+        />
 
-          <div>
-            <label className="block mb-1 font-medium">Department</label>
-            <input
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...register("department", {
-                required: true,
-              })}
-            />
-            {errors.department && (
-              <p className="text-red-500 text-sm mt-1">
-                Please enter department name
-              </p>
-            )}
-          </div>
+        <Input
+          label="Semester"
+          type="number"
+          placeholder="1"
+          error={errors.semester ? "Please enter semester number" : ""}
+          {...register("semester", {
+            required: true,
+          })}
+        />
 
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+            Profile Image
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            className="w-full px-3 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+            {...register("profile_image", { required: true })}
+          />
+          {errors.profile_image && (
+            <p className="text-sm text-red-600 mt-1.5">
+              Please upload a profile image
+            </p>
+          )}
+        </div>
 
-          <div>
-            <label className="block mb-1 font-medium">Semester</label>
-            <input
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...register("semester", {
-                required: true,
-              })}
-            />
-            {errors.semester && (
-              <p className="text-red-500 text-sm mt-1">
-                Please enter semester number
-              </p>
-            )}
-          </div>
+        <div className="flex justify-end gap-3 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onClose}
+            disabled={isLoading}
+          >
+            Cancel
+          </Button>
 
-
-
-          <div>
-            <label className="block mb-1 font-medium">
-              Profile Image
-            </label>
-            <input
-              type="file"
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              {...register("profile_image", { required: true })}
-            />
-            {errors.profile_image && (
-              <p className="text-red-500 text-sm mt-1">
-                Please upload a profile image
-              </p>
-            )}
-          </div>
-          <div className="flex justify-end gap-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
-              disabled={isLoading}
-            >
-              {isLoading ? "Adding..." : "Add Student"}
-            </button>
-          </div>
-
-
-        </form>
-
-      </div>
-    </div>
+          <Button
+            type="submit"
+            isLoading={isLoading}
+          >
+            Add Student
+          </Button>
+        </div>
+      </form>
+    </Modal>
   );
 };
 
