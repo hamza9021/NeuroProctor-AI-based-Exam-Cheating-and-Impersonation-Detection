@@ -2,6 +2,7 @@ import axiosInstancePython from "../../AxiosInstance/axios.python.js";
 
 class Student {
     async createStudent(studentData) {
+        console.log(studentData);
         const response = await axiosInstancePython.post(
             "/api/v1/students",
             studentData
