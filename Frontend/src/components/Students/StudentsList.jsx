@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import studentApis from "../../apis/Students/student.apis.js";
+import { Link } from "react-router-dom";
 
 export default function StudentsList() {
     const [page, setPage] = useState(1);
@@ -202,25 +203,26 @@ export default function StudentsList() {
                         </tr>
                     ) : (
                         students.map((student) => (
-                            <tr key={student.id}>
-                                <td><img src={student.profile_image} alt="Error" /></td>
-                                <td>{student.full_name}</td>
-                                <td>
-                                    {
-                                        student.registration_number
-                                    }
-                                </td>
-                                <td>{student.department}</td>
-                                <td>{student.email}</td>
-                                <td>{student.semester}</td>
-                                <td>
-                                    {student.face_embeddings?.some(
-                                        (face) => face.embedding?.length > 0
-                                    )
-                                        ? "Embedded"
-                                        : "Not Embedded"}
-                                </td>
-                            </tr>
+                            <Link to={`/students/${student.id}`} key={student.id}>
+                                <tr key={student.id}>
+                                    <td><img src={student.profile_image} alt="Error" /></td>
+                                    <td>{student.full_name}</td>
+                                    <td>
+                                        {
+                                            student.registration_number
+                                        }
+                                    </td>
+                                    <td>{student.department}</td>
+                                    <td>{student.email}</td>
+                                    <td>{student.semester}</td>
+                                    <td>
+                                        {student.face_embeddings?.some(
+                                            (face) => face.embedding?.length > 0
+                                        )
+                                            ? "Embedded"
+                                            : "Not Embedded"}
+                                    </td>
+                                </tr></Link>
                         ))
                     )}
                 </tbody>
