@@ -47,7 +47,6 @@ const registerUser = wrapperFunction(async (req, res) => {
 });
 
 const loginUser = wrapperFunction(async (req, res) => {
-    console.log(req.body);
     const { email, password, role } = req.body;
 
     const user = await User.findOne({ email });
@@ -85,4 +84,29 @@ const loginUser = wrapperFunction(async (req, res) => {
         .json(new ApiResponse(200, updateUser, "User Logged In Successfully"));
 });
 
-export { registerUser, loginUser };
+const logoutUser = wrapperFunction(async (req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        { $set: { refreshToken: undefined } },
+        { new: true }
+    );
+
+    res.status(200)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
+        .json(new ApiResponse(200, {}, "Logout Successfully"));
+});
+
+const getUser = wrapperFunction(async (req, res) => {
+    const user = req.user;
+
+    if (!user) {
+        throw new ApiError(404, "User Not Found");
+    }
+
+    console.log(user);
+
+    return res.json(new ApiResponse(200, user, "User Data"));
+});
+
+export { registerUser, loginUser, getUser, logoutUser };

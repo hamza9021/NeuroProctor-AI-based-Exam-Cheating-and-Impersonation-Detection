@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser } from "../Controllers/user.controller.js";
+import { registerUser, loginUser,getUser,logoutUser } from "../Controllers/user.controller.js";
 import {
     registerValidation,
     loginValidation,
@@ -17,5 +17,6 @@ userRouter.post(
 );
 
 userRouter.post("/login", loginValidation, loginUser);
-
+userRouter.post("/logout",verifyJWT,logoutUser);
+userRouter.get("/",verifyJWT,getUser);
 export default userRouter;
