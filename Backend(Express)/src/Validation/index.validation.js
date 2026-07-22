@@ -3,4 +3,6 @@ import {
     loginValidationSchema,
 } from "./user.validation.js";
 
-export { registerValidationSchema, loginValidationSchema };
+import { examValidationSchema } from "./exam.validation.js";
+
+export { registerValidationSchema, loginValidationSchema , examValidationSchema };
