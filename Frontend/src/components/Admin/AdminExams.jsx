@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import examApis from "../../apis/Exams/exams.apis.js";
+import { useQuery } from "@tanstack/react-query";
+import adminApis from "../../apis/Admin/admin.apis.js";
 import { useNavigate } from "react-router-dom";
 import { Search, ChevronUp, ChevronDown, Eye, Trash2, Calendar, Clock, FileText, AlertCircle, CheckCircle } from "lucide-react";
 import Button from "../ui/Button";
@@ -11,15 +11,11 @@ import ErrorState from "../ui/ErrorState";
 import Skeleton from "../ui/Skeleton";
 import Card from "../ui/Card";
 
-export default function ExamsList() {
+export default function AdminExams() {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [search, setSearch] = useState("");
-    const [sortBy, setSortBy] = useState("createdAt");
-    const [sortOrder, setSortOrder] = useState("desc");
 
     const {
         data,
@@ -29,68 +25,27 @@ export default function ExamsList() {
         error,
     } = useQuery({
         queryKey: [
-            "exams",
+            "admin-exams",
             page,
             limit,
             search,
-            sortBy,
-            sortOrder,
         ],
         queryFn: () =>
-            examApis.getExams(
+            adminApis.getExams(
                 page,
                 limit,
-                search,
-                sortBy,
-                sortOrder
+                search
             ),
         placeholderData: (previousData) => previousData,
     });
-
-    const { mutate } = useMutation({
-        mutationFn: (examId) =>
-            examApis.deleteExam(examId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["exams"] });
-        },
-    });
-
-    const handleDelete = (examId) => {
-        if (window.confirm("Are you sure you want to delete this exam?")) {
-            mutate(examId);
-        }
-    };
 
     const exams = data?.exams || [];
     const total = data?.pagination?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
-    // Calculate statistics
     const activeCount = exams.filter(exam => exam.status === "active").length;
     const completedCount = exams.filter(exam => exam.status === "completed").length;
     const cancelledCount = exams.filter(exam => exam.status === "cancelled").length;
-
-    const handleSort = (field) => {
-        if (sortBy === field) {
-            setSortOrder((prev) =>
-                prev === "asc" ? "desc" : "asc"
-            );
-        } else {
-            setSortBy(field);
-            setSortOrder("asc");
-        }
-
-        setPage(1);
-    };
-
-    const SortIcon = ({ field }) => {
-        if (sortBy !== field) return null;
-        return sortOrder === "asc" ? (
-            <ChevronUp className="w-4 h-4" />
-        ) : (
-            <ChevronDown className="w-4 h-4" />
-        );
-    };
 
     const getStatusBadge = (status) => {
         switch (status) {
@@ -128,9 +83,9 @@ export default function ExamsList() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-xl font-semibold text-neutral-900">Exams</h2>
+                    <h2 className="text-xl font-semibold text-neutral-900">Exams Overview</h2>
                     <p className="text-sm text-neutral-500 mt-1">
-                        Manage and view all examinations
+                        View and manage all examinations in the system
                     </p>
                 </div>
             </div>
@@ -221,29 +176,17 @@ export default function ExamsList() {
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                     Exam
                                 </th>
-                                <th
-                                    className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 transition-colors"
-                                    onClick={() => handleSort("courseName")}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        Course
-                                        <SortIcon field="courseName" />
-                                    </div>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Course
                                 </th>
-                                <th
-                                    className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 transition-colors"
-                                    onClick={() => handleSort("courseCode")}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        Code
-                                        <SortIcon field="courseCode" />
-                                    </div>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Code
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                     Duration
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                                    Schedule
+                                    Created By
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                     Status
@@ -261,7 +204,7 @@ export default function ExamsList() {
                                         <EmptyState
                                             icon={Search}
                                             title="No exams found"
-                                            description={search ? "Try adjusting your search terms" : "Get started by adding a new exam"}
+                                            description={search ? "Try adjusting your search terms" : "No exams created yet"}
                                         />
                                     </td>
                                 </tr>
@@ -270,7 +213,7 @@ export default function ExamsList() {
                                     <tr
                                         key={exam._id}
                                         className="hover:bg-neutral-50 transition-colors cursor-pointer"
-                                        onClick={() => navigate(`/exams/${exam._id}`)}
+                                        onClick={() => navigate(`/admin/exam/${exam._id}`)}
                                     >
                                         <td className="px-6 py-4">
                                             <div className="font-medium text-neutral-900">
@@ -293,15 +236,7 @@ export default function ExamsList() {
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-neutral-600">
-                                            <div className="space-y-1">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4" />
-                                                    {new Date(exam.startTime).toLocaleDateString()}
-                                                </div>
-                                                <div className="text-xs text-neutral-500">
-                                                    {new Date(exam.startTime).toLocaleTimeString()} - {new Date(exam.endTime).toLocaleTimeString()}
-                                                </div>
-                                            </div>
+                                            {exam.createdBy?.fullName || "Unknown"}
                                         </td>
                                         <td className="px-6 py-4">
                                             {getStatusBadge(exam.status)}
@@ -311,7 +246,7 @@ export default function ExamsList() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate(`/exams/${exam._id}`);
+                                                        navigate(`/admin/exam/${exam._id}`);
                                                     }}
                                                     className="p-2 text-neutral-400 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
                                                     title="View"
@@ -321,7 +256,7 @@ export default function ExamsList() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDelete(exam._id);
+                                                        // Handle delete
                                                     }}
                                                     className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Delete"

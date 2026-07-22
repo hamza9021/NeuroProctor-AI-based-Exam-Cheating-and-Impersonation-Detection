@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Users, 
   FileText,
+  Shield,
   Settings, 
   LogOut, 
   Menu, 
@@ -20,11 +21,22 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
 
   const navigation = [
-    { name: 'Dashboard', href: '/invigilator/dashboard', icon: LayoutDashboard },
+    { name: 'Dashboard', href: user?.role === 'admin' ? '/admin/dashboard' : '/invigilator/dashboard', icon: LayoutDashboard },
+    { name: 'Admin Management', href: '/admin', icon: Shield, adminOnly: true },
     { name: 'Students', href: '/students', icon: Users },
     { name: 'Exams', href: '/exams', icon: FileText },
     { name: 'Settings', href: '/settings', icon: Settings },
-  ];
+  ].filter(item => {
+    // Hide Students and Exams for admin
+    if (user?.role === 'admin' && (item.name === 'Students' || item.name === 'Exams')) {
+      return false;
+    }
+    // Hide admin-only items for non-admin users
+    if (item.adminOnly && user?.role !== 'admin') {
+      return false;
+    }
+    return true;
+  });
 
   const isActive = (href) => location.pathname === href;
 

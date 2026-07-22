@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import examApis from "../../apis/Exams/exams.apis.js";
+import { useQuery } from "@tanstack/react-query";
+import adminApis from "../../apis/Admin/admin.apis.js";
 import { useNavigate } from "react-router-dom";
-import { Search, ChevronUp, ChevronDown, Eye, Trash2, Calendar, Clock, FileText, AlertCircle, CheckCircle } from "lucide-react";
+import { Search, ChevronUp, ChevronDown, Eye, Trash2, Shield, Mail, Phone, UserCheck, UserX } from "lucide-react";
 import Button from "../ui/Button";
 import Badge from "../ui/Badge";
 import Spinner from "../ui/Spinner";
@@ -11,15 +11,11 @@ import ErrorState from "../ui/ErrorState";
 import Skeleton from "../ui/Skeleton";
 import Card from "../ui/Card";
 
-export default function ExamsList() {
+export default function AdminsList() {
     const navigate = useNavigate();
-    const queryClient = useQueryClient();
-
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
     const [search, setSearch] = useState("");
-    const [sortBy, setSortBy] = useState("createdAt");
-    const [sortOrder, setSortOrder] = useState("desc");
 
     const {
         data,
@@ -29,80 +25,38 @@ export default function ExamsList() {
         error,
     } = useQuery({
         queryKey: [
-            "exams",
+            "admins",
             page,
             limit,
             search,
-            sortBy,
-            sortOrder,
         ],
         queryFn: () =>
-            examApis.getExams(
+            adminApis.getAdmins(
                 page,
                 limit,
-                search,
-                sortBy,
-                sortOrder
+                search
             ),
         placeholderData: (previousData) => previousData,
     });
 
-    const { mutate } = useMutation({
-        mutationFn: (examId) =>
-            examApis.deleteExam(examId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["exams"] });
-        },
-    });
-
-    const handleDelete = (examId) => {
-        if (window.confirm("Are you sure you want to delete this exam?")) {
-            mutate(examId);
-        }
-    };
-
-    const exams = data?.exams || [];
+    const admins = data?.admins || [];
     const total = data?.pagination?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
-    // Calculate statistics
-    const activeCount = exams.filter(exam => exam.status === "active").length;
-    const completedCount = exams.filter(exam => exam.status === "completed").length;
-    const cancelledCount = exams.filter(exam => exam.status === "cancelled").length;
-
     const handleSort = (field) => {
-        if (sortBy === field) {
-            setSortOrder((prev) =>
-                prev === "asc" ? "desc" : "asc"
-            );
-        } else {
-            setSortBy(field);
-            setSortOrder("asc");
-        }
-
-        setPage(1);
+        // Sorting can be implemented if needed
     };
 
     const SortIcon = ({ field }) => {
-        if (sortBy !== field) return null;
-        return sortOrder === "asc" ? (
-            <ChevronUp className="w-4 h-4" />
-        ) : (
-            <ChevronDown className="w-4 h-4" />
-        );
+        return null;
     };
 
-    const getStatusBadge = (status) => {
-        switch (status) {
-            case "active":
-                return <Badge variant="success">Active</Badge>;
-            case "completed":
-                return <Badge variant="info">Completed</Badge>;
-            case "cancelled":
-                return <Badge variant="error">Cancelled</Badge>;
-            default:
-                return <Badge variant="neutral">{status}</Badge>;
-        }
+    const getVerificationBadge = (isVerified) => {
+        return isVerified ? (
+            <Badge variant="success">Verified</Badge>
+        ) : (
+            <Badge variant="error">Unverified</Badge>
+        );
     };
 
     if (isLoading) {
@@ -117,7 +71,7 @@ export default function ExamsList() {
     if (isError) {
         return (
             <ErrorState
-                title="Failed to load exams"
+                title="Failed to load admins"
                 description={error.message || "Please try again later."}
             />
         );
@@ -128,9 +82,9 @@ export default function ExamsList() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h2 className="text-xl font-semibold text-neutral-900">Exams</h2>
+                    <h2 className="text-xl font-semibold text-neutral-900">Admins</h2>
                     <p className="text-sm text-neutral-500 mt-1">
-                        Manage and view all examinations
+                        Manage and view all administrators
                     </p>
                 </div>
             </div>
@@ -140,11 +94,11 @@ export default function ExamsList() {
                 <Card padding="md">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-neutral-500">Total Exams</p>
+                            <p className="text-sm text-neutral-500">Total Admins</p>
                             <p className="text-2xl font-semibold text-neutral-900 mt-1">{total}</p>
                         </div>
                         <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
-                            <FileText className="w-6 h-6 text-accent" />
+                            <Shield className="w-6 h-6 text-accent" />
                         </div>
                     </div>
                 </Card>
@@ -152,11 +106,11 @@ export default function ExamsList() {
                 <Card padding="md">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-neutral-500">Active</p>
-                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{activeCount}</p>
+                            <p className="text-sm text-neutral-500">Verified</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{admins.filter(a => a.isVerified).length}</p>
                         </div>
                         <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                            <CheckCircle className="w-6 h-6 text-green-600" />
+                            <UserCheck className="w-6 h-6 text-green-600" />
                         </div>
                     </div>
                 </Card>
@@ -164,11 +118,11 @@ export default function ExamsList() {
                 <Card padding="md">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-neutral-500">Completed</p>
-                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{completedCount}</p>
+                            <p className="text-sm text-neutral-500">Unverified</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{admins.filter(a => !a.isVerified).length}</p>
                         </div>
-                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Calendar className="w-6 h-6 text-blue-600" />
+                        <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <UserX className="w-6 h-6 text-red-600" />
                         </div>
                     </div>
                 </Card>
@@ -180,7 +134,7 @@ export default function ExamsList() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                     <input
                         type="text"
-                        placeholder="Search exams..."
+                        placeholder="Search admins..."
                         value={search}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -219,34 +173,16 @@ export default function ExamsList() {
                         <thead>
                             <tr className="border-b border-neutral-200 bg-neutral-50">
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                                    Exam
-                                </th>
-                                <th
-                                    className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 transition-colors"
-                                    onClick={() => handleSort("courseName")}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        Course
-                                        <SortIcon field="courseName" />
-                                    </div>
-                                </th>
-                                <th
-                                    className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 transition-colors"
-                                    onClick={() => handleSort("courseCode")}
-                                >
-                                    <div className="flex items-center gap-1">
-                                        Code
-                                        <SortIcon field="courseCode" />
-                                    </div>
+                                    Admin
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                                    Duration
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
-                                    Schedule
+                                    Contact
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                     Status
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Created
                                 </th>
                                 <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
                                     Actions
@@ -255,63 +191,66 @@ export default function ExamsList() {
                         </thead>
 
                         <tbody className="divide-y divide-neutral-200">
-                            {exams.length === 0 ? (
+                            {admins.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7">
+                                    <td colSpan="5">
                                         <EmptyState
                                             icon={Search}
-                                            title="No exams found"
-                                            description={search ? "Try adjusting your search terms" : "Get started by adding a new exam"}
+                                            title="No admins found"
+                                            description={search ? "Try adjusting your search terms" : "No admins registered yet"}
                                         />
                                     </td>
                                 </tr>
                             ) : (
-                                exams.map((exam) => (
+                                admins.map((admin) => (
                                     <tr
-                                        key={exam._id}
+                                        key={admin._id}
                                         className="hover:bg-neutral-50 transition-colors cursor-pointer"
-                                        onClick={() => navigate(`/exams/${exam._id}`)}
+                                        onClick={() => navigate(`/admin/${admin._id}`)}
                                     >
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-neutral-900">
-                                                {exam.title}
-                                            </div>
-                                            <div className="text-sm text-neutral-500 mt-1">
-                                                {exam.description}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-neutral-600">
-                                            {exam.courseName}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-neutral-600">
-                                            {exam.courseCode}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-neutral-600">
-                                            <div className="flex items-center gap-2">
-                                                <Clock className="w-4 h-4" />
-                                                {exam.duration} min
+                                            <div className="flex items-center gap-3">
+                                                {admin.profileImage ? (
+                                                    <img
+                                                        src={admin.profileImage}
+                                                        alt={admin.fullName}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center">
+                                                        <Shield className="w-5 h-5 text-accent" />
+                                                    </div>
+                                                )}
+                                                <div>
+                                                    <div className="font-medium text-neutral-900">
+                                                        {admin.fullName}
+                                                    </div>
+                                                    <div className="text-sm text-neutral-500 mt-1">
+                                                        {admin.email}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-sm text-neutral-600">
                                             <div className="space-y-1">
                                                 <div className="flex items-center gap-2">
-                                                    <Calendar className="w-4 h-4" />
-                                                    {new Date(exam.startTime).toLocaleDateString()}
-                                                </div>
-                                                <div className="text-xs text-neutral-500">
-                                                    {new Date(exam.startTime).toLocaleTimeString()} - {new Date(exam.endTime).toLocaleTimeString()}
+                                                    <Phone className="w-4 h-4" />
+                                                    {admin.phoneNumber}
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {getStatusBadge(exam.status)}
+                                            {getVerificationBadge(admin.isVerified)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-neutral-600">
+                                            {new Date(admin.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        navigate(`/exams/${exam._id}`);
+                                                        navigate(`/admin/${admin._id}`);
                                                     }}
                                                     className="p-2 text-neutral-400 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
                                                     title="View"
@@ -321,7 +260,7 @@ export default function ExamsList() {
                                                 <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        handleDelete(exam._id);
+                                                        // Handle delete
                                                     }}
                                                     className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Delete"
@@ -343,7 +282,7 @@ export default function ExamsList() {
                 <p className="text-sm text-neutral-600">
                     Showing{" "}
                     <span className="font-medium text-neutral-900">
-                        {exams.length === 0 ? 0 : (page - 1) * limit + 1}
+                        {admins.length === 0 ? 0 : (page - 1) * limit + 1}
                     </span>
                     {" to "}
                     <span className="font-medium text-neutral-900">
