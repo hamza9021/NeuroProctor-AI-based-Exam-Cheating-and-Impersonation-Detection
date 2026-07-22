@@ -39,7 +39,7 @@ const examSchema = new Schema(
                 "cancelled",
             ],
             type: String,
-            default: "draft",
+            default: "scheduled",
         },
         createdBy: {
             type: Schema.Types.ObjectId,
