@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
   Users, 
+  FileText,
   Settings, 
   LogOut, 
   Menu, 
@@ -21,6 +22,7 @@ const Sidebar = () => {
   const navigation = [
     { name: 'Dashboard', href: '/invigilator/dashboard', icon: LayoutDashboard },
     { name: 'Students', href: '/students', icon: Users },
+    { name: 'Exams', href: '/exams', icon: FileText },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

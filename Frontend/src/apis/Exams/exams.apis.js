@@ -26,29 +26,32 @@ class Exam {
             },
         }
         );
-        return response.data;
+        return response.data.data;
     }
 
     async getExam(examId) {
         const response = await axiosInstanceExpress.get(
             `/api/v1/exams/${examId}`
         );
-        return response.data;
+        return response.data.data;
     }
 
     async deleteExam(examId) {
         const response = await axiosInstanceExpress.delete(
-            `/api/v1/exams/${examId}`
+            `/api/v1/exams/delete/${examId}`
         );
         return response.data;
     }
 
     async updateExam(examId, examData) {
         const response = await axiosInstanceExpress.put(
-            `/api/v1/exams/${examId}`,
+            `/api/v1/exams/update/${examId}`,
             examData
         );
         return response.data;
     }
 
 }
+
+const examApis = new Exam();
+export default examApis;

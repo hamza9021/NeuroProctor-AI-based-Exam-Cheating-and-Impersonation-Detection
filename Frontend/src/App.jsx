@@ -3,6 +3,8 @@ import { Register, Login, InvigilatorDashboard } from "./Pages";
 import Homepage from "./Pages/Homepage";
 import Student from "./components/Students/Student";
 import StudentDetail from "./components/Students/StudentDetail";
+import Exam from "./components/Exams/Exam";
+import ExamDetail from "./components/Exams/ExamDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 
@@ -21,6 +23,8 @@ const App = () => {
                     />
                     <Route path="/students" element={<Student />} />
                     <Route path="/students/:studentId" element={<StudentDetail />} />
+                    <Route path="/exams" element={<Exam />} />
+                    <Route path="/exams/:examId" element={<ExamDetail />} />
                 </Route>
             </Routes>
         </Router>
