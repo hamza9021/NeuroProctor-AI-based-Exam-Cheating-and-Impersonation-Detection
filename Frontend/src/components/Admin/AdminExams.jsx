@@ -43,14 +43,17 @@ export default function AdminExams() {
     const total = data?.pagination?.total || 0;
     const totalPages = Math.ceil(total / limit);
 
-    const activeCount = exams.filter(exam => exam.status === "active").length;
+    const scheduledCount = exams.filter(exam => exam.status === "scheduled").length;
+    const ongoingCount = exams.filter(exam => exam.status === "ongoing").length;
     const completedCount = exams.filter(exam => exam.status === "completed").length;
     const cancelledCount = exams.filter(exam => exam.status === "cancelled").length;
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case "active":
-                return <Badge variant="success">Active</Badge>;
+            case "scheduled":
+                return <Badge variant="neutral">Scheduled</Badge>;
+            case "ongoing":
+                return <Badge variant="success">Ongoing</Badge>;
             case "completed":
                 return <Badge variant="info">Completed</Badge>;
             case "cancelled":
@@ -91,7 +94,7 @@ export default function AdminExams() {
             </div>
 
             {/* Statistics Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <Card padding="md">
                     <div className="flex items-center justify-between">
                         <div>
@@ -107,8 +110,20 @@ export default function AdminExams() {
                 <Card padding="md">
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-neutral-500">Active</p>
-                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{activeCount}</p>
+                            <p className="text-sm text-neutral-500">Scheduled</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{scheduledCount}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                            <Clock className="w-6 h-6 text-indigo-600" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card padding="md">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-neutral-500">Ongoing</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{ongoingCount}</p>
                         </div>
                         <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                             <CheckCircle className="w-6 h-6 text-green-600" />
@@ -124,6 +139,18 @@ export default function AdminExams() {
                         </div>
                         <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                             <Calendar className="w-6 h-6 text-blue-600" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card padding="md">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-neutral-500">Cancelled</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{cancelledCount}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                            <AlertCircle className="w-6 h-6 text-red-600" />
                         </div>
                     </div>
                 </Card>

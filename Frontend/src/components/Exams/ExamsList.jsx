@@ -66,7 +66,7 @@ export default function ExamsList() {
     const totalPages = Math.ceil(total / limit);
 
     // Calculate statistics
-    const activeCount = exams.filter(exam => exam.status === "active").length;
+    const activeCount = exams.filter(exam => exam.status === "ongoing").length;
     const completedCount = exams.filter(exam => exam.status === "completed").length;
     const cancelledCount = exams.filter(exam => exam.status === "cancelled").length;
 

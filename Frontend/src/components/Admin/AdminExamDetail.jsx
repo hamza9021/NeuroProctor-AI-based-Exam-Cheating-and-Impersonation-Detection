@@ -25,8 +25,10 @@ const AdminExamDetail = () => {
 
     const getStatusBadge = (status) => {
         switch (status) {
-            case "active":
-                return <Badge variant="success">Active</Badge>;
+            case "scheduled":
+                return <Badge variant="neutral">Scheduled</Badge>;
+            case "ongoing":
+                return <Badge variant="success">Ongoing</Badge>;
             case "completed":
                 return <Badge variant="info">Completed</Badge>;
             case "cancelled":
