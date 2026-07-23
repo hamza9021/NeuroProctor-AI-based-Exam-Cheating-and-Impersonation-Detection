@@ -111,10 +111,10 @@ class RuleEngineProcessor(BaseProcessor):
             frame: Frame to draw on
             frame_events: FrameEvents object
         """
-        # Panel settings - increased size for better visibility
-        panel_height = 350
-        panel_width = 450
-        margin = 15
+        # Panel settings - smaller size
+        panel_height = 250
+        panel_width = 320
+        margin = 10
         
         # Get unique event types to avoid duplicates
         seen_types = set()
@@ -124,7 +124,7 @@ class RuleEngineProcessor(BaseProcessor):
                 seen_types.add(event.event_type.value)
                 unique_events.append(event)
         
-        # Draw semi-transparent panel background (darker for better contrast)
+        # Draw semi-transparent panel background
         overlay = frame.copy()
         cv2.rectangle(
             overlay,
@@ -133,28 +133,28 @@ class RuleEngineProcessor(BaseProcessor):
             (0, 0, 0),
             -1,
         )
-        cv2.addWeighted(overlay, 0.85, frame, 0.15, 0, frame)
+        cv2.addWeighted(overlay, 0.8, frame, 0.2, 0, frame)
         
-        # Draw panel border (thicker)
+        # Draw panel border
         cv2.rectangle(
             frame,
             (margin, margin),
             (margin + panel_width, margin + panel_height),
             (255, 255, 255),
-            3,
+            2,
         )
         
-        # Draw header with larger font
+        # Draw header
         font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.8
+        font_scale = 0.6
         font_thickness = 2
         text_color = (255, 255, 255)
         
-        header_text = f"EVENTS DETECTED: {len(unique_events)}"
+        header_text = f"EVENTS: {len(unique_events)}"
         cv2.putText(
             frame,
             header_text,
-            (margin + 15, margin + 35),
+            (margin + 10, margin + 25),
             font,
             font_scale,
             text_color,
@@ -164,15 +164,15 @@ class RuleEngineProcessor(BaseProcessor):
         # Draw separator line
         cv2.line(
             frame,
-            (margin + 15, margin + 45),
-            (margin + panel_width - 15, margin + 45),
+            (margin + 10, margin + 35),
+            (margin + panel_width - 10, margin + 35),
             (255, 255, 255),
-            2,
+            1,
         )
         
-        # Draw events with larger fonts
-        y_offset = margin + 75
-        for event in unique_events[:8]:  # Increased to 8 events
+        # Draw events
+        y_offset = margin + 55
+        for event in unique_events[:6]:  # Limit to 6 events
             # Color based on severity
             if event.severity.value == "CRITICAL":
                 color = (0, 0, 255)  # Red
@@ -184,14 +184,14 @@ class RuleEngineProcessor(BaseProcessor):
                 color = (0, 255, 0)  # Green
                 symbol = "[i]"
             
-            # Draw event text with larger font
+            # Draw event text
             event_text = f"{symbol} {event.event_type.value}"
             cv2.putText(
                 frame,
                 event_text,
-                (margin + 15, y_offset),
+                (margin + 10, y_offset),
                 font,
-                0.65,
+                0.5,
                 color,
                 2,
             )
@@ -202,15 +202,15 @@ class RuleEngineProcessor(BaseProcessor):
                 cv2.putText(
                     frame,
                     conf_text,
-                    (margin + 15, y_offset + 20),
+                    (margin + 10, y_offset + 18),
                     font,
-                    0.45,
+                    0.4,
                     (200, 200, 200),
                     1,
                 )
-                y_offset += 40
+                y_offset += 35
             else:
-                y_offset += 25
+                y_offset += 20
 
     def cleanup(self) -> None:
         """Clean up resources."""

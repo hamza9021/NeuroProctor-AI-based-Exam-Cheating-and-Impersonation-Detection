@@ -71,6 +71,7 @@ class VideoWriter:
             fourcc,
             self.metadata.fps,
             (self.metadata.width, self.metadata.height),
+            isColor=True,
         )
 
         if not self.writer.isOpened():

@@ -24,8 +24,8 @@ class Settings:
     # Supported video extensions
     SUPPORTED_EXTENSIONS: List[str] = [".mp4", ".avi", ".mov", ".mkv", ".flv"]
 
-    # Default codec
-    DEFAULT_CODEC: str = "mp4v"
+    # Default codec (use H.264 for better quality)
+    DEFAULT_CODEC: str = "avc1"  # H.264 codec for better quality
 
     # Logging configuration
     LOG_LEVEL: str = "INFO"
