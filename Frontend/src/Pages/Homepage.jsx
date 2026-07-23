@@ -1,11 +1,11 @@
 import { Link } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { 
-  Shield, 
-  UserCheck, 
-  Activity, 
-  FileText, 
-  Smile, 
+import {
+  Shield,
+  UserCheck,
+  Activity,
+  FileText,
+  Smile,
   LayoutDashboard,
   ArrowRight,
   CheckCircle,
@@ -15,9 +15,33 @@ import {
   X
 } from "lucide-react";
 import { useState } from "react";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const Homepage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Hardcoded data for visualization
+  const examGrowthData = [
+    { month: 'Jan', exams: 1200 },
+    { month: 'Feb', exams: 1800 },
+    { month: 'Mar', exams: 2400 },
+    { month: 'Apr', exams: 3200 },
+    { month: 'May', exams: 4100 },
+    { month: 'Jun', exams: 5200 },
+  ];
+
+  const detectionAccuracyData = [
+    { category: 'Face Detection', accuracy: 99.2 },
+    { category: 'Behavior Analysis', accuracy: 97.8 },
+    { category: 'Audio Monitoring', accuracy: 95.5 },
+    { category: 'Screen Tracking', accuracy: 98.1 },
+  ];
+
+  const userDistributionData = [
+    { name: 'Students', value: 45000, color: '#6366f1' },
+    { name: 'Instructors', value: 3200, color: '#22c55e' },
+    { name: 'Admins', value: 800, color: '#3b82f6' },
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -378,7 +402,12 @@ const Homepage = () => {
       {/* Statistics Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-neutral-900 text-white">
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-semibold mb-4">Platform Statistics</h2>
+            <p className="text-neutral-400">Real-time insights into our platform performance</p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
             <div className="text-center">
               <p className="text-4xl sm:text-5xl font-semibold mb-2">50K+</p>
               <p className="text-neutral-400">Exams Conducted</p>
@@ -394,6 +423,84 @@ const Homepage = () => {
             <div className="text-center">
               <p className="text-4xl sm:text-5xl font-semibold mb-2">95%</p>
               <p className="text-neutral-400">Satisfied Users</p>
+            </div>
+          </div>
+
+          {/* Charts Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Exam Growth Chart */}
+            <div className="bg-neutral-800 rounded-xl p-6">
+              <h3 className="text-xl font-semibold mb-4">Exam Growth Trend</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={examGrowthData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="month" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Legend />
+                  <Line type="monotone" dataKey="exams" stroke="#6366f1" strokeWidth={2} dot={{ fill: '#6366f1' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Detection Accuracy Chart */}
+            <div className="bg-neutral-800 rounded-xl p-6">
+              <h3 className="text-xl font-semibold mb-4">Detection Accuracy</h3>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={detectionAccuracyData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis dataKey="category" stroke="#9ca3af" />
+                  <YAxis stroke="#9ca3af" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                  <Bar dataKey="accuracy" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* User Distribution Chart */}
+          <div className="mt-8 bg-neutral-800 rounded-xl p-6">
+            <h3 className="text-xl font-semibold mb-4">User Distribution</h3>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={userDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {userDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="space-y-4">
+                {userDistributionData.map((item, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: item.color }} />
+                    <div>
+                      <p className="font-medium">{item.name}</p>
+                      <p className="text-neutral-400">{item.value.toLocaleString()}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
