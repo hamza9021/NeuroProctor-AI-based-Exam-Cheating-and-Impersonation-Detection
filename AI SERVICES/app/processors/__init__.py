@@ -14,6 +14,7 @@ from .base_processor import (
     RuleEngine,
 )
 from .object_detection_processor import ObjectDetectionProcessor
+from .pose_processor import PoseProcessor
 
 __all__ = [
     "BaseProcessor",
@@ -26,4 +27,5 @@ __all__ = [
     "TemporalSmoother",
     "RuleEngine",
     "ObjectDetectionProcessor",
+    "PoseProcessor",
 ]

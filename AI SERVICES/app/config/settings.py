@@ -64,6 +64,21 @@ class Settings:
         "mouse": (255, 0, 255),     # Magenta
     }
 
+    # YOLO Pose Estimation settings
+    POSE_MODEL_NAME: str = "yolov8n-pose.pt"
+    POSE_MODEL_PATH: Path = MODELS_DIR / POSE_MODEL_NAME
+    POSE_CONFIDENCE_THRESHOLD: float = 0.5
+    POSE_IOU_THRESHOLD: float = 0.45
+    POSE_DEVICE: str = "auto"  # "auto", "cpu", "cuda", "0", "1", etc.
+    
+    # Pose visualization settings
+    POSE_SKELETON_COLOR: tuple = (0, 255, 255)  # Yellow (BGR)
+    POSE_KEYPOINT_COLOR: tuple = (0, 0, 255)    # Red (BGR)
+    POSE_KEYPOINT_RADIUS: int = 3
+    POSE_SKELETON_THICKNESS: int = 2
+    POSE_BOX_COLOR: tuple = (255, 0, 0)  # Blue (BGR)
+    POSE_BOX_THICKNESS: int = 2
+
     @classmethod
     def create_directories(cls) -> None:
         """Create all necessary directories if they don't exist."""
