@@ -1,0 +1,21 @@
+# AI Services - Video Processing Pipeline Requirements
+
+# Core dependencies
+opencv-python>=4.8.0
+numpy>=1.24.0
+
+# Progress bar
+tqdm>=4.65.0
+
+# Type hints (optional but recommended)
+typing-extensions>=4.5.0
+
+# YOLO Object Detection (Phase 2)
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Future AI model dependencies (for future phases)
+# transformers>=4.30.0
+# timm>=0.9.0
+# scikit-learn>=1.3.0
