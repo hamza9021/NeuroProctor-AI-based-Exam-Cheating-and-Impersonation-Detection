@@ -1,0 +1,40 @@
+2026-07-23 12:02:05 - __main__ - INFO - Input file validated: input_videos\exam.mp4
+2026-07-23 12:02:05 - __main__ - INFO - Adding Object Detection Processor to pipeline
+2026-07-23 12:02:05 - app.pipeline.pipeline - INFO - Added processor: ObjectDetectionProcessor
+2026-07-23 12:02:05 - __main__ - INFO - Starting video processing pipeline
+2026-07-23 12:02:05 - app.pipeline.pipeline - INFO - Starting pipeline for: exam.mp4
+2026-07-23 12:02:05 - app.video.reader - INFO - Video opened successfully: exam.mp4
+2026-07-23 12:02:05 - app.video.reader - INFO - Metadata extracted: 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             29.97
+Resolution:      1080x1920
+Total Frames:    268
+Duration:        8.94s
+Codec:           h264
+==================================================
+
+2026-07-23 12:02:05 - app.pipeline.pipeline - INFO - 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             29.97
+Resolution:      1080x1920
+Total Frames:    268
+Duration:        8.94s
+Codec:           h264
+==================================================
+
+2026-07-23 12:02:05 - app.video.writer - INFO - Output directory created: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos
+2026-07-23 12:02:05 - app.video.writer - INFO - Video writer initialized: processed_exam.mp4
+2026-07-23 12:02:05 - app.detectors.object_detector - WARNING - Model file not found at C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n.pt, downloading from Ultralytics...
+2026-07-23 12:02:05 - app.detectors.object_detector - INFO - YOLO model loaded successfully from C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n.pt
+2026-07-23 12:02:05 - app.detectors.object_detector - INFO - Using device: cpu
+2026-07-23 12:02:05 - app.pipeline.pipeline - ERROR - Failed to initialize processor ObjectDetectionProcessor: 'ObjectDetectionProcessor' object has no attribute 'logger'
+2026-07-23 12:02:05 - app.video.writer - INFO - Video writer released: processed_exam.mp4
+2026-07-23 12:02:05 - app.video.reader - INFO - Video capture released
+2026-07-23 12:02:05 - app.pipeline.pipeline - ERROR - Pipeline execution failed: 'ObjectDetectionProcessor' object has no attribute 'logger'
+2026-07-23 12:02:05 - __main__ - ERROR - Unexpected error: Pipeline execution failed: 'ObjectDetectionProcessor' object has no attribute 'logger'

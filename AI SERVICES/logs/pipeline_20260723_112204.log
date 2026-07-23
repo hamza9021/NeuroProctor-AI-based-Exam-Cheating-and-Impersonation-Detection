@@ -1,0 +1,46 @@
+2026-07-23 11:22:04 - __main__ - INFO - Input file validated: input_videos\exam.mp4
+2026-07-23 11:22:04 - __main__ - INFO - Starting video processing pipeline
+2026-07-23 11:22:04 - app.pipeline.pipeline - INFO - Starting pipeline for: exam.mp4
+2026-07-23 11:22:07 - app.video.reader - INFO - Video opened successfully: exam.mp4
+2026-07-23 11:22:07 - app.video.reader - INFO - Metadata extracted: 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             29.97
+Resolution:      1920x1080
+Total Frames:    469
+Duration:        15.65s
+Codec:           h264
+==================================================
+
+2026-07-23 11:22:07 - app.pipeline.pipeline - INFO - 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             29.97
+Resolution:      1920x1080
+Total Frames:    469
+Duration:        15.65s
+Codec:           h264
+==================================================
+
+2026-07-23 11:22:07 - app.pipeline.pipeline - WARNING - No processors added, using placeholder processor
+2026-07-23 11:22:07 - app.pipeline.pipeline - INFO - Added processor: PlaceholderProcessor
+2026-07-23 11:22:07 - app.pipeline.pipeline - INFO - Initialized processor: PlaceholderProcessor
+2026-07-23 11:22:07 - app.pipeline.pipeline - INFO - Processing started: 469 frames
+2026-07-23 11:22:17 - app.video.reader - WARNING - Reached end of video or corrupted frame
+2026-07-23 11:22:17 - app.pipeline.pipeline - INFO - Processing completed
+2026-07-23 11:22:17 - app.pipeline.pipeline - INFO - Cleaned up processor: PlaceholderProcessor
+2026-07-23 11:22:17 - app.video.reader - INFO - Video capture released
+2026-07-23 11:22:17 - app.pipeline.pipeline - INFO - Pipeline completed in 12.37s
+2026-07-23 11:22:17 - app.pipeline.pipeline - INFO - Output saved to: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos\processed_exam.mp4
+2026-07-23 11:22:17 - __main__ - INFO - ==================================================
+2026-07-23 11:22:17 - __main__ - INFO - PIPELINE COMPLETED SUCCESSFULLY
+2026-07-23 11:22:17 - __main__ - INFO - ==================================================
+2026-07-23 11:22:17 - __main__ - INFO - Input:  input_videos\exam.mp4
+2026-07-23 11:22:17 - __main__ - INFO - Output: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos\processed_exam.mp4
+2026-07-23 11:22:17 - __main__ - INFO - Frames: 469
+2026-07-23 11:22:17 - __main__ - INFO - Duration: 15.65s
+2026-07-23 11:22:17 - __main__ - INFO - ==================================================

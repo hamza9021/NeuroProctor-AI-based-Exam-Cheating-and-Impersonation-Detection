@@ -1,0 +1,61 @@
+2026-07-23 12:05:02 - __main__ - INFO - Input file validated: input_videos\exam.mp4
+2026-07-23 12:05:02 - __main__ - INFO - Adding Object Detection Processor to pipeline
+2026-07-23 12:05:02 - app.pipeline.pipeline - INFO - Added processor: ObjectDetectionProcessor
+2026-07-23 12:05:02 - __main__ - INFO - Starting video processing pipeline
+2026-07-23 12:05:02 - app.pipeline.pipeline - INFO - Starting pipeline for: exam.mp4
+2026-07-23 12:05:02 - app.video.reader - INFO - Video opened successfully: exam.mp4
+2026-07-23 12:05:02 - app.video.reader - INFO - Metadata extracted: 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             29.97
+Resolution:      1080x1920
+Total Frames:    268
+Duration:        8.94s
+Codec:           h264
+==================================================
+
+2026-07-23 12:05:02 - app.pipeline.pipeline - INFO - 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             29.97
+Resolution:      1080x1920
+Total Frames:    268
+Duration:        8.94s
+Codec:           h264
+==================================================
+
+2026-07-23 12:05:02 - app.video.writer - INFO - Output directory created: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos
+2026-07-23 12:05:02 - app.video.writer - INFO - Video writer initialized: processed_exam.mp4
+2026-07-23 12:05:02 - app.detectors.object_detector - WARNING - Model file not found at C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n.pt, downloading from Ultralytics...
+2026-07-23 12:05:02 - app.detectors.object_detector - INFO - YOLO model loaded successfully from C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n.pt
+2026-07-23 12:05:02 - app.detectors.object_detector - INFO - Using device: cpu
+2026-07-23 12:05:02 - app.processors.object_detection_processor - INFO - ObjectDetectionProcessor initialized with device: cpu
+2026-07-23 12:05:02 - app.pipeline.pipeline - INFO - Initialized processor: ObjectDetectionProcessor
+2026-07-23 12:05:02 - app.pipeline.pipeline - INFO - Processing started: 268 frames
+2026-07-23 12:05:04 - app.processors.object_detection_processor - INFO - Frame 0: Total objects: 2, Class counts: {'person': 1, 'book': 1}, Inference: 1397.60ms
+2026-07-23 12:05:04 - app.pipeline.pipeline - INFO - Progress: -------------------- 0.0% - Frame 0/268
+2026-07-23 12:05:16 - app.processors.object_detection_processor - INFO - Frame 100: Total objects: 3, Class counts: {'person': 2, 'cell phone': 1}, Inference: 121.43ms
+2026-07-23 12:05:16 - app.pipeline.pipeline - INFO - Progress: =======------------- 37.3% - Frame 100/268
+2026-07-23 12:05:28 - app.processors.object_detection_processor - INFO - Frame 200: Total objects: 4, Class counts: {'person': 2, 'cell phone': 1, 'book': 1}, Inference: 97.85ms
+2026-07-23 12:05:28 - app.pipeline.pipeline - INFO - Progress: ==============------ 74.6% - Frame 200/268
+2026-07-23 12:05:36 - app.video.reader - WARNING - Reached end of video or corrupted frame
+2026-07-23 12:05:36 - app.pipeline.pipeline - INFO - Processing completed
+2026-07-23 12:05:36 - app.detectors.object_detector - INFO - Object detector cleaned up
+2026-07-23 12:05:36 - app.processors.object_detection_processor - INFO - ObjectDetectionProcessor cleaned up
+2026-07-23 12:05:36 - app.pipeline.pipeline - INFO - Cleaned up processor: ObjectDetectionProcessor
+2026-07-23 12:05:36 - app.video.writer - INFO - Video writer released: processed_exam.mp4
+2026-07-23 12:05:36 - app.video.reader - INFO - Video capture released
+2026-07-23 12:05:36 - app.pipeline.pipeline - INFO - Pipeline completed in 34.01s
+2026-07-23 12:05:36 - app.pipeline.pipeline - INFO - Output saved to: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos\processed_exam.mp4
+2026-07-23 12:05:36 - __main__ - INFO - ==================================================
+2026-07-23 12:05:36 - __main__ - INFO - PIPELINE COMPLETED SUCCESSFULLY
+2026-07-23 12:05:36 - __main__ - INFO - ==================================================
+2026-07-23 12:05:36 - __main__ - INFO - Input:  input_videos\exam.mp4
+2026-07-23 12:05:36 - __main__ - INFO - Output: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos\processed_exam.mp4
+2026-07-23 12:05:36 - __main__ - INFO - Frames: 268
+2026-07-23 12:05:36 - __main__ - INFO - Duration: 8.94s
+2026-07-23 12:05:36 - __main__ - INFO - ==================================================

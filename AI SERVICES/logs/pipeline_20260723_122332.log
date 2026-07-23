@@ -1,0 +1,74 @@
+2026-07-23 12:23:32 - __main__ - INFO - Input file validated: input_videos\exam.mp4
+2026-07-23 12:23:32 - __main__ - INFO - Adding Object Detection Processor to pipeline
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - Added processor: ObjectDetectionProcessor
+2026-07-23 12:23:32 - __main__ - INFO - Adding Pose Estimation Processor to pipeline
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - Added processor: PoseProcessor
+2026-07-23 12:23:32 - __main__ - INFO - Starting video processing pipeline
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - Starting pipeline for: exam.mp4
+2026-07-23 12:23:32 - app.video.reader - INFO - Video opened successfully: exam.mp4
+2026-07-23 12:23:32 - app.video.reader - INFO - Metadata extracted: 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             24.00
+Resolution:      3840x2160
+Total Frames:    263
+Duration:        10.96s
+Codec:           h264
+==================================================
+
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - 
+==================================================
+VIDEO METADATA
+==================================================
+Filename:        exam.mp4
+FPS:             24.00
+Resolution:      3840x2160
+Total Frames:    263
+Duration:        10.96s
+Codec:           h264
+==================================================
+
+2026-07-23 12:23:32 - app.video.writer - INFO - Output directory created: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos
+2026-07-23 12:23:32 - app.video.writer - INFO - Video writer initialized: processed_exam.mp4
+2026-07-23 12:23:32 - app.detectors.object_detector - WARNING - Model file not found at C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n.pt, downloading from Ultralytics...
+2026-07-23 12:23:32 - app.detectors.object_detector - INFO - YOLO model loaded successfully from C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n.pt
+2026-07-23 12:23:32 - app.detectors.object_detector - INFO - Using device: cpu
+2026-07-23 12:23:32 - app.processors.object_detection_processor - INFO - ObjectDetectionProcessor initialized with device: cpu
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - Initialized processor: ObjectDetectionProcessor
+2026-07-23 12:23:32 - app.pose.pose_estimator - WARNING - Pose model not found at C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n-pose.pt, downloading from Ultralytics...
+2026-07-23 12:23:32 - app.pose.pose_estimator - INFO - YOLO pose model loaded successfully from C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\app\models\yolov8n-pose.pt
+2026-07-23 12:23:32 - app.pose.pose_estimator - INFO - Using device: cpu
+2026-07-23 12:23:32 - app.processors.pose_processor - INFO - PoseProcessor initialized with device: cpu
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - Initialized processor: PoseProcessor
+2026-07-23 12:23:32 - app.pipeline.pipeline - INFO - Processing started: 263 frames
+2026-07-23 12:23:33 - app.processors.object_detection_processor - INFO - Frame 0: Total objects: 3, Class counts: {'person': 3}, Inference: 1282.13ms
+2026-07-23 12:23:33 - app.processors.pose_processor - INFO - Frame 0: Persons: 3, Inference: 122.75ms
+2026-07-23 12:23:33 - app.pipeline.pipeline - INFO - Progress: -------------------- 0.0% - Frame 0/263
+2026-07-23 12:23:59 - app.processors.object_detection_processor - INFO - Frame 100: Total objects: 3, Class counts: {'person': 3}, Inference: 124.18ms
+2026-07-23 12:24:00 - app.processors.pose_processor - INFO - Frame 100: Persons: 3, Inference: 157.11ms
+2026-07-23 12:24:00 - app.pipeline.pipeline - INFO - Progress: =======------------- 38.0% - Frame 100/263
+2026-07-23 12:24:26 - app.processors.object_detection_processor - INFO - Frame 200: Total objects: 3, Class counts: {'person': 3}, Inference: 97.98ms
+2026-07-23 12:24:26 - app.processors.pose_processor - INFO - Frame 200: Persons: 3, Inference: 93.02ms
+2026-07-23 12:24:26 - app.pipeline.pipeline - INFO - Progress: ===============----- 76.0% - Frame 200/263
+2026-07-23 12:24:42 - app.video.reader - WARNING - Reached end of video or corrupted frame
+2026-07-23 12:24:42 - app.pipeline.pipeline - INFO - Processing completed
+2026-07-23 12:24:42 - app.detectors.object_detector - INFO - Object detector cleaned up
+2026-07-23 12:24:42 - app.processors.object_detection_processor - INFO - ObjectDetectionProcessor cleaned up
+2026-07-23 12:24:42 - app.pipeline.pipeline - INFO - Cleaned up processor: ObjectDetectionProcessor
+2026-07-23 12:24:42 - app.pose.pose_estimator - INFO - Pose estimator cleaned up
+2026-07-23 12:24:42 - app.processors.pose_processor - INFO - PoseProcessor cleaned up
+2026-07-23 12:24:42 - app.pipeline.pipeline - INFO - Cleaned up processor: PoseProcessor
+2026-07-23 12:24:42 - app.video.writer - INFO - Video writer released: processed_exam.mp4
+2026-07-23 12:24:42 - app.video.reader - INFO - Video capture released
+2026-07-23 12:24:42 - app.pipeline.pipeline - INFO - Pipeline completed in 1.17m
+2026-07-23 12:24:42 - app.pipeline.pipeline - INFO - Output saved to: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos\processed_exam.mp4
+2026-07-23 12:24:42 - __main__ - INFO - ==================================================
+2026-07-23 12:24:42 - __main__ - INFO - PIPELINE COMPLETED SUCCESSFULLY
+2026-07-23 12:24:42 - __main__ - INFO - ==================================================
+2026-07-23 12:24:42 - __main__ - INFO - Input:  input_videos\exam.mp4
+2026-07-23 12:24:42 - __main__ - INFO - Output: C:\Users\Hamza\Desktop\NeuroProctor-AI-based-Exam-Cheating-and-Impersonation-Detection\AI SERVICES\output_videos\processed_exam.mp4
+2026-07-23 12:24:42 - __main__ - INFO - Frames: 263
+2026-07-23 12:24:42 - __main__ - INFO - Duration: 10.96s
+2026-07-23 12:24:42 - __main__ - INFO - ==================================================
