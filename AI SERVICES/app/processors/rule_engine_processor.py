@@ -1,0 +1,269 @@
+"""
+Rule Engine Processor module.
+
+This module provides a processor that integrates the Rule Engine
+with the video processing pipeline.
+"""
+
+import numpy as np
+import cv2
+from typing import Optional, List
+
+from app.processors.base_processor import BaseProcessor
+from app.rules.engine import RuleEngine
+from app.events.event import FrameEvents
+from app.events.event_types import EventSeverity
+from app.config.settings import settings
+from app.utils.logger import get_logger
+
+
+class RuleEngineProcessor(BaseProcessor):
+    """Processor for rule engine event detection in video frames."""
+
+    def __init__(self):
+        """Initialize rule engine processor."""
+        super().__init__("RuleEngineProcessor")
+        
+        self.logger = get_logger(__name__)
+        self.rule_engine = RuleEngine()
+        
+        self.current_frame_number: int = 0
+        self.current_timestamp: float = 0.0
+        self.last_frame_events: Optional[FrameEvents] = None
+        self.all_frame_events: List[FrameEvents] = []
+        
+        # References to previous processor outputs
+        self.last_detections = None
+        self.last_pose_result = None
+
+    def initialize(self) -> None:
+        """Initialize the rule engine."""
+        try:
+            self.logger.info(f"RuleEngineProcessor initialized with {self.rule_engine.get_rule_count()} rules")
+        except Exception as e:
+            self.logger.error(f"Failed to initialize RuleEngineProcessor: {e}")
+            raise
+
+    def process(self, frame: np.ndarray) -> np.ndarray:
+        """
+        Process a frame with rule engine.
+
+        Args:
+            frame: Input frame as numpy array
+
+        Returns:
+            Annotated frame with events drawn
+        """
+        # Process through rule engine
+        frame_events = self.rule_engine.process(
+            frame=frame,
+            frame_number=self.current_frame_number,
+            timestamp=self.current_timestamp,
+            detections=self.last_detections,
+            pose_result=self.last_pose_result,
+        )
+
+        # Store frame events
+        self.last_frame_events = frame_events
+        self.all_frame_events.append(frame_events)
+
+        # Draw events on frame
+        annotated_frame = self._draw_events(frame, frame_events)
+
+        # Log event summary periodically
+        if self.current_frame_number % 100 == 0:
+            event_count = frame_events.get_event_count()
+            if event_count > 0:
+                self.logger.info(
+                    f"Frame {self.current_frame_number}: "
+                    f"Events: {event_count}, "
+                    f"Critical: {len(frame_events.get_events_by_severity('CRITICAL'))}"
+                )
+
+        return annotated_frame
+
+    def _draw_events(self, frame: np.ndarray, frame_events: FrameEvents) -> np.ndarray:
+        """
+        Draw events on frame.
+
+        Args:
+            frame: Input frame
+            frame_events: FrameEvents object
+
+        Returns:
+            Frame with events drawn
+        """
+        annotated_frame = frame.copy()
+
+        if frame_events.get_event_count() == 0:
+            return annotated_frame
+
+        # Draw event panel
+        self._draw_event_panel(annotated_frame, frame_events)
+
+        return annotated_frame
+
+    def _draw_event_panel(self, frame: np.ndarray, frame_events: FrameEvents) -> None:
+        """
+        Draw event panel on frame.
+
+        Args:
+            frame: Frame to draw on
+            frame_events: FrameEvents object
+        """
+        # Panel settings - increased size for better visibility
+        panel_height = 350
+        panel_width = 450
+        margin = 15
+        
+        # Get unique event types to avoid duplicates
+        seen_types = set()
+        unique_events = []
+        for event in frame_events.events:
+            if event.event_type.value not in seen_types:
+                seen_types.add(event.event_type.value)
+                unique_events.append(event)
+        
+        # Draw semi-transparent panel background (darker for better contrast)
+        overlay = frame.copy()
+        cv2.rectangle(
+            overlay,
+            (margin, margin),
+            (margin + panel_width, margin + panel_height),
+            (0, 0, 0),
+            -1,
+        )
+        cv2.addWeighted(overlay, 0.85, frame, 0.15, 0, frame)
+        
+        # Draw panel border (thicker)
+        cv2.rectangle(
+            frame,
+            (margin, margin),
+            (margin + panel_width, margin + panel_height),
+            (255, 255, 255),
+            3,
+        )
+        
+        # Draw header with larger font
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 0.8
+        font_thickness = 2
+        text_color = (255, 255, 255)
+        
+        header_text = f"EVENTS DETECTED: {len(unique_events)}"
+        cv2.putText(
+            frame,
+            header_text,
+            (margin + 15, margin + 35),
+            font,
+            font_scale,
+            text_color,
+            font_thickness,
+        )
+        
+        # Draw separator line
+        cv2.line(
+            frame,
+            (margin + 15, margin + 45),
+            (margin + panel_width - 15, margin + 45),
+            (255, 255, 255),
+            2,
+        )
+        
+        # Draw events with larger fonts
+        y_offset = margin + 75
+        for event in unique_events[:8]:  # Increased to 8 events
+            # Color based on severity
+            if event.severity.value == "CRITICAL":
+                color = (0, 0, 255)  # Red
+                symbol = "[!]"
+            elif event.severity.value == "WARNING":
+                color = (0, 165, 255)  # Orange
+                symbol = "[!]"
+            else:
+                color = (0, 255, 0)  # Green
+                symbol = "[i]"
+            
+            # Draw event text with larger font
+            event_text = f"{symbol} {event.event_type.value}"
+            cv2.putText(
+                frame,
+                event_text,
+                (margin + 15, y_offset),
+                font,
+                0.65,
+                color,
+                2,
+            )
+            
+            # Draw confidence if available
+            if event.confidence > 0:
+                conf_text = f"Conf: {event.confidence:.0%}"
+                cv2.putText(
+                    frame,
+                    conf_text,
+                    (margin + 15, y_offset + 20),
+                    font,
+                    0.45,
+                    (200, 200, 200),
+                    1,
+                )
+                y_offset += 40
+            else:
+                y_offset += 25
+
+    def cleanup(self) -> None:
+        """Clean up resources."""
+        self.logger.info("RuleEngineProcessor cleaned up")
+
+    def set_frame_context(self, frame_number: int, timestamp: float) -> None:
+        """
+        Set frame context for processing.
+
+        Args:
+            frame_number: Current frame number
+            timestamp: Current frame timestamp
+        """
+        self.current_frame_number = frame_number
+        self.current_timestamp = timestamp
+
+    def set_detections(self, detections) -> None:
+        """
+        Set detections from object detection processor.
+
+        Args:
+            detections: FrameDetections object
+        """
+        self.last_detections = detections
+
+    def set_pose_result(self, pose_result) -> None:
+        """
+        Set pose result from pose processor.
+
+        Args:
+            pose_result: PoseResult object
+        """
+        self.last_pose_result = pose_result
+
+    def get_last_frame_events(self) -> Optional[FrameEvents]:
+        """
+        Get events from the last processed frame.
+
+        Returns:
+            FrameEvents object or None if no frame processed yet
+        """
+        return self.last_frame_events
+
+    def get_all_frame_events(self) -> List[FrameEvents]:
+        """
+        Get all events from processed frames.
+
+        Returns:
+            List of FrameEvents objects
+        """
+        return self.all_frame_events
+
+    def clear_events_history(self) -> None:
+        """Clear the history of all frame events."""
+        self.all_frame_events.clear()
+        self.last_frame_events = None

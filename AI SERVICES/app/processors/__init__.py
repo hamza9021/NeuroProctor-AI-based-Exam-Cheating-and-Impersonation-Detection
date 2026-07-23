@@ -15,6 +15,7 @@ from .base_processor import (
 )
 from .object_detection_processor import ObjectDetectionProcessor
 from .pose_processor import PoseProcessor
+from .rule_engine_processor import RuleEngineProcessor
 
 __all__ = [
     "BaseProcessor",
@@ -28,4 +29,5 @@ __all__ = [
     "RuleEngine",
     "ObjectDetectionProcessor",
     "PoseProcessor",
+    "RuleEngineProcessor",
 ]

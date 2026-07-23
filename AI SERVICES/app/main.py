@@ -17,6 +17,7 @@ from app.config.settings import settings
 from app.utils.logger import get_logger
 from app.processors.object_detection_processor import ObjectDetectionProcessor
 from app.processors.pose_processor import PoseProcessor
+from app.processors.rule_engine_processor import RuleEngineProcessor
 
 
 def parse_arguments():
@@ -66,7 +67,7 @@ Examples:
         "--version",
         "-v",
         action="version",
-        version="AI Services Pipeline v3.0.0 (YOLO Object Detection + Pose Estimation)"
+        version="AI Services Pipeline v4.0.0 (YOLO Object Detection + Pose Estimation + Rule Engine)"
     )
 
     parser.add_argument(
@@ -79,6 +80,12 @@ Examples:
         "--no-pose",
         action="store_true",
         help="Disable pose estimation"
+    )
+
+    parser.add_argument(
+        "--no-rules",
+        action="store_true",
+        help="Disable rule engine event detection"
     )
 
     return parser.parse_args()
@@ -145,6 +152,12 @@ def main():
             logger.info("Adding Pose Estimation Processor to pipeline")
             pose_processor = PoseProcessor()
             pipeline.add_processor(pose_processor)
+        
+        # Add rule engine processor (unless disabled)
+        if not args.no_rules:
+            logger.info("Adding Rule Engine Processor to pipeline")
+            rule_processor = RuleEngineProcessor()
+            pipeline.add_processor(rule_processor)
         
         # Run pipeline
         logger.info("Starting video processing pipeline")

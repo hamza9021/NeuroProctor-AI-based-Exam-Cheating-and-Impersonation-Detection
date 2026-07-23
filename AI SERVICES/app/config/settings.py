@@ -79,6 +79,26 @@ class Settings:
     POSE_BOX_COLOR: tuple = (255, 0, 0)  # Blue (BGR)
     POSE_BOX_THICKNESS: int = 2
 
+    # Rule Engine settings
+    # Person-related thresholds
+    MAX_PERSONS: int = 1  # Maximum allowed persons in frame
+    PERSON_CONFIDENCE_THRESHOLD: float = 0.5
+    
+    # Object-related thresholds
+    PHONE_CONFIDENCE_THRESHOLD: float = 0.5
+    LAPTOP_CONFIDENCE_THRESHOLD: float = 0.5
+    BOOK_CONFIDENCE_THRESHOLD: float = 0.5
+    
+    # Head direction thresholds (in degrees)
+    HEAD_TURN_THRESHOLD: float = 30.0  # Degrees to consider as looking left/right
+    HEAD_DOWN_THRESHOLD: float = 20.0  # Degrees to consider as looking down
+    
+    # Frame boundary thresholds (percentage of frame)
+    FRAME_BOUNDARY_MARGIN: float = 0.1  # 10% margin from frame edge
+    
+    # Standing detection threshold
+    STANDING_HEIGHT_RATIO: float = 0.7  # Height/width ratio threshold for standing
+
     @classmethod
     def create_directories(cls) -> None:
         """Create all necessary directories if they don't exist."""

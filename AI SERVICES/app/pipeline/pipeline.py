@@ -36,6 +36,10 @@ class Pipeline:
         self.processors: List[BaseProcessor] = []
         self.timer = Timer()
 
+        # Initialize data passing variables
+        self._last_detections = None
+        self._last_pose_result = None
+
         # Ensure directories exist
         settings.create_directories()
 
@@ -115,6 +119,25 @@ class Pipeline:
         for processor in self.processors:
             try:
                 processed_frame = processor.process(processed_frame)
+                
+                # Pass data to rule engine processor if it's the next processor
+                # This allows the rule engine to access detections and pose results
+                processor_name = processor.get_name()
+                if processor_name == "ObjectDetectionProcessor":
+                    # Store detections for rule engine
+                    if hasattr(processor, 'get_last_detections'):
+                        self._last_detections = processor.get_last_detections()
+                elif processor_name == "PoseProcessor":
+                    # Store pose results for rule engine
+                    if hasattr(processor, 'get_last_pose_result'):
+                        self._last_pose_result = processor.get_last_pose_result()
+                elif processor_name == "RuleEngineProcessor":
+                    # Pass detections and pose results to rule engine
+                    if hasattr(processor, 'set_detections') and hasattr(self, '_last_detections'):
+                        processor.set_detections(self._last_detections)
+                    if hasattr(processor, 'set_pose_result') and hasattr(self, '_last_pose_result'):
+                        processor.set_pose_result(self._last_pose_result)
+                        
             except Exception as e:
                 self.logger.error(f"Error in processor {processor.get_name()}: {e}")
                 # Continue with original frame if processor fails

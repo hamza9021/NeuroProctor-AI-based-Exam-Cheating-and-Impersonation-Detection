@@ -43,6 +43,9 @@ class Logger:
             if log_file is None:
                 log_file = f"pipeline_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
             
+            # Ensure log directory exists
+            settings.LOG_DIR.mkdir(parents=True, exist_ok=True)
+            
             log_path = settings.LOG_DIR / log_file
             file_handler = logging.FileHandler(log_path)
             file_handler.setLevel(getattr(logging, settings.LOG_LEVEL))
