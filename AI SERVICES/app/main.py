@@ -16,8 +16,11 @@ from app.pipeline.pipeline import Pipeline
 from app.config.settings import settings
 from app.utils.logger import get_logger
 from app.processors.object_detection_processor import ObjectDetectionProcessor
+from app.processors.tracking_processor import TrackingProcessor
 from app.processors.pose_processor import PoseProcessor
+from app.processors.head_pose_processor import HeadPoseProcessor
 from app.processors.rule_engine_processor import RuleEngineProcessor
+from app.processors.temporal_processor import TemporalProcessor
 
 
 def parse_arguments():
@@ -67,7 +70,7 @@ Examples:
         "--version",
         "-v",
         action="version",
-        version="AI Services Pipeline v4.0.0 (YOLO Object Detection + Pose Estimation + Rule Engine)"
+        version="AI Services Pipeline v7.0.0 (YOLO Object Detection + DeepSORT + Pose Estimation + Head Pose Estimation + Rule Engine + Temporal Smoothing)"
     )
 
     parser.add_argument(
@@ -86,6 +89,24 @@ Examples:
         "--no-rules",
         action="store_true",
         help="Disable rule engine event detection"
+    )
+
+    parser.add_argument(
+        "--no-temporal",
+        action="store_true",
+        help="Disable temporal smoothing"
+    )
+
+    parser.add_argument(
+        "--no-tracking",
+        action="store_true",
+        help="Disable multi-object tracking (DeepSORT)"
+    )
+
+    parser.add_argument(
+        "--no-head-pose",
+        action="store_true",
+        help="Disable head pose estimation (6DRepNet)"
     )
 
     return parser.parse_args()
@@ -147,17 +168,35 @@ def main():
             detection_processor = ObjectDetectionProcessor()
             pipeline.add_processor(detection_processor)
         
+        # Add tracking processor (unless disabled)
+        if not args.no_tracking:
+            logger.info("Adding ByteTrack Multi-Object Tracking Processor to pipeline")
+            tracking_processor = TrackingProcessor()
+            pipeline.add_processor(tracking_processor)
+        
         # Add pose estimation processor (unless disabled)
         if not args.no_pose:
             logger.info("Adding Pose Estimation Processor to pipeline")
             pose_processor = PoseProcessor()
             pipeline.add_processor(pose_processor)
         
+        # Add head pose estimation processor (unless disabled)
+        if not args.no_head_pose:
+            logger.info("Adding Head Pose Estimation Processor to pipeline")
+            head_pose_processor = HeadPoseProcessor()
+            pipeline.add_processor(head_pose_processor)
+        
         # Add rule engine processor (unless disabled)
         if not args.no_rules:
             logger.info("Adding Rule Engine Processor to pipeline")
             rule_processor = RuleEngineProcessor()
             pipeline.add_processor(rule_processor)
+        
+        # Add temporal smoothing processor (unless disabled)
+        if not args.no_temporal:
+            logger.info("Adding Temporal Smoothing Processor to pipeline")
+            temporal_processor = TemporalProcessor()
+            pipeline.add_processor(temporal_processor)
         
         # Run pipeline
         logger.info("Starting video processing pipeline")

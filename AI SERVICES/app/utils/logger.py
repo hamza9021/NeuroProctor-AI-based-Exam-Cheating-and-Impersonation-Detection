@@ -63,9 +63,9 @@ class Logger:
         """Log warning message."""
         self.logger.warning(message)
 
-    def error(self, message: str) -> None:
-        """Log error message."""
-        self.logger.error(message)
+    def error(self, message: str, exc_info: bool = False) -> None:
+        """Log error message with optional exception info."""
+        self.logger.error(message, exc_info=exc_info)
 
     def debug(self, message: str) -> None:
         """Log debug message."""
@@ -74,6 +74,10 @@ class Logger:
     def critical(self, message: str) -> None:
         """Log critical message."""
         self.logger.critical(message)
+    
+    def exception(self, message: str) -> None:
+        """Log exception message with full traceback."""
+        self.logger.exception(message)
 
 
 def get_logger(name: str, log_file: Optional[str] = None) -> Logger:

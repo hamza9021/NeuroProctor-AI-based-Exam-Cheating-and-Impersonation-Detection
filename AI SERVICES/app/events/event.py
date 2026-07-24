@@ -22,6 +22,7 @@ class ExamEvent:
     frame_number: int
     confidence: float
     description: str
+    track_id: Optional[int] = None  # ByteTrack Track ID for persistent identity
     metadata: Optional[Dict[str, Any]] = None
 
     def to_dict(self) -> dict:
@@ -38,6 +39,7 @@ class ExamEvent:
             "frame_number": self.frame_number,
             "confidence": self.confidence,
             "description": self.description,
+            "track_id": self.track_id,
             "metadata": self.metadata or {},
         }
 
@@ -59,6 +61,7 @@ class ExamEvent:
             frame_number=data["frame_number"],
             confidence=data["confidence"],
             description=data["description"],
+            track_id=data.get("track_id"),
             metadata=data.get("metadata"),
         )
 

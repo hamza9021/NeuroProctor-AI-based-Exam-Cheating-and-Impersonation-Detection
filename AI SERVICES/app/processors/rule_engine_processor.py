@@ -35,6 +35,8 @@ class RuleEngineProcessor(BaseProcessor):
         # References to previous processor outputs
         self.last_detections = None
         self.last_pose_result = None
+        self.last_frame_tracks = None
+        self.last_head_poses = None
 
     def initialize(self) -> None:
         """Initialize the rule engine."""
@@ -61,7 +63,12 @@ class RuleEngineProcessor(BaseProcessor):
             timestamp=self.current_timestamp,
             detections=self.last_detections,
             pose_result=self.last_pose_result,
+            head_poses=self.last_head_poses,
         )
+
+        # Associate events with Track IDs if tracking data is available
+        if self.last_frame_tracks:
+            frame_events = self._associate_events_with_tracks(frame_events)
 
         # Store frame events
         self.last_frame_events = frame_events
@@ -73,10 +80,12 @@ class RuleEngineProcessor(BaseProcessor):
         # Log event summary periodically
         if self.current_frame_number % 100 == 0:
             event_count = frame_events.get_event_count()
+            tracked_event_count = sum(1 for e in frame_events.events if e.track_id is not None)
             if event_count > 0:
                 self.logger.info(
                     f"Frame {self.current_frame_number}: "
                     f"Events: {event_count}, "
+                    f"Tracked: {tracked_event_count}, "
                     f"Critical: {len(frame_events.get_events_by_severity('CRITICAL'))}"
                 )
 
@@ -244,6 +253,56 @@ class RuleEngineProcessor(BaseProcessor):
             pose_result: PoseResult object
         """
         self.last_pose_result = pose_result
+    
+    def set_frame_tracks(self, frame_tracks) -> None:
+        """
+        Set frame tracks from tracking processor.
+
+        Args:
+            frame_tracks: FrameTracks object with track information
+        """
+        self.last_frame_tracks = frame_tracks
+    
+    def set_head_poses(self, head_poses) -> None:
+        """
+        Set head poses from head pose processor.
+
+        Args:
+            head_poses: FrameHeadPoses object with head pose estimates
+        """
+        self.last_head_poses = head_poses
+    
+    def _associate_events_with_tracks(self, frame_events) -> FrameEvents:
+        """
+        Associate events with Track IDs using pose track information.
+        
+        Args:
+            frame_events: FrameEvents object with events
+            
+        Returns:
+            FrameEvents with track IDs assigned to events
+        """
+        if not self.last_pose_result or not self.last_frame_tracks:
+            return frame_events
+        
+        # Create mapping from track_id to track
+        track_map = {t.track_id: t for t in self.last_frame_tracks.tracks if t.is_active()}
+        
+        for event in frame_events.events:
+            # Check if event has pose information in metadata
+            if event.metadata and 'person_id' in event.metadata:
+                person_id = event.metadata['person_id']
+                
+                # Find the corresponding person pose
+                try:
+                    person_pose = self.last_pose_result.get_person_by_id(person_id)
+                    if person_pose.track_id is not None:
+                        event.track_id = person_pose.track_id
+                except ValueError:
+                    # Person not found, skip
+                    pass
+        
+        return frame_events
 
     def get_last_frame_events(self) -> Optional[FrameEvents]:
         """

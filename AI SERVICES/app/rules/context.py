@@ -11,6 +11,7 @@ import numpy as np
 
 from app.detectors.detection import FrameDetections
 from app.pose.pose_result import PoseResult
+from app.head_pose.schemas import FrameHeadPoses
 
 
 @dataclass
@@ -22,6 +23,7 @@ class RuleContext:
     timestamp: float
     detections: Optional[FrameDetections] = None
     pose_result: Optional[PoseResult] = None
+    head_poses: Optional[FrameHeadPoses] = None
     frame_width: int = 0
     frame_height: int = 0
 
@@ -87,3 +89,26 @@ class RuleContext:
             True if pose results exist
         """
         return self.pose_result is not None and len(self.pose_result.persons) > 0
+
+    def has_head_poses(self) -> bool:
+        """
+        Check if there are any head pose results.
+
+        Returns:
+            True if head pose results exist
+        """
+        return self.head_poses is not None and len(self.head_poses.head_poses) > 0
+
+    def get_head_pose_by_track_id(self, track_id: int):
+        """
+        Get head pose for a specific track ID.
+
+        Args:
+            track_id: Track ID to retrieve
+
+        Returns:
+            HeadPoseResult if found, None otherwise
+        """
+        if self.head_poses is None:
+            return None
+        return self.head_poses.get_head_pose_by_track_id(track_id)

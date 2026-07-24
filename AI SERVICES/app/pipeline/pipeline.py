@@ -39,6 +39,9 @@ class Pipeline:
         # Initialize data passing variables
         self._last_detections = None
         self._last_pose_result = None
+        self._last_rule_engine_events = None
+        self._last_frame_tracks = None
+        self._last_head_poses = None
 
         # Ensure directories exist
         settings.create_directories()
@@ -115,28 +118,61 @@ class Pipeline:
             Processed frame
         """
         processed_frame = frame.copy()
+        original_frame = frame.copy()  # Keep original for DeepSORT embeddings
         
         for processor in self.processors:
             try:
-                processed_frame = processor.process(processed_frame)
+                # Pass original frame to tracking processor for DeepSORT embeddings
+                if processor.get_name() == "TrackingProcessor":
+                    processed_frame = processor.process(processed_frame)
+                else:
+                    processed_frame = processor.process(processed_frame)
                 
-                # Pass data to rule engine processor if it's the next processor
-                # This allows the rule engine to access detections and pose results
+                # Pass data between processors
                 processor_name = processor.get_name()
                 if processor_name == "ObjectDetectionProcessor":
-                    # Store detections for rule engine
+                    # Store detections for tracking and rule engine
                     if hasattr(processor, 'get_last_detections'):
                         self._last_detections = processor.get_last_detections()
+                elif processor_name == "TrackingProcessor":
+                    # Pass detections to tracking processor
+                    if hasattr(processor, 'set_detections') and hasattr(self, '_last_detections'):
+                        processor.set_detections(self._last_detections)
+                    # Store tracks for downstream processors
+                    if hasattr(processor, 'get_last_frame_tracks'):
+                        self._last_frame_tracks = processor.get_last_frame_tracks()
                 elif processor_name == "PoseProcessor":
-                    # Store pose results for rule engine
+                    # Store pose results for rule engine and head pose
                     if hasattr(processor, 'get_last_pose_result'):
                         self._last_pose_result = processor.get_last_pose_result()
+                elif processor_name == "HeadPoseProcessor":
+                    # Pass frame tracks and pose results to head pose processor
+                    if hasattr(processor, 'set_frame_tracks') and hasattr(self, '_last_frame_tracks'):
+                        processor.set_frame_tracks(self._last_frame_tracks)
+                    if hasattr(processor, 'set_pose_result') and hasattr(self, '_last_pose_result'):
+                        processor.set_pose_result(self._last_pose_result)
+                    # Store head poses for rule engine
+                    if hasattr(processor, 'get_last_head_poses'):
+                        self._last_head_poses = processor.get_last_head_poses()
                 elif processor_name == "RuleEngineProcessor":
-                    # Pass detections and pose results to rule engine
+                    # Pass detections, pose results, tracks, and head poses to rule engine
                     if hasattr(processor, 'set_detections') and hasattr(self, '_last_detections'):
                         processor.set_detections(self._last_detections)
                     if hasattr(processor, 'set_pose_result') and hasattr(self, '_last_pose_result'):
                         processor.set_pose_result(self._last_pose_result)
+                    if hasattr(processor, 'set_frame_tracks') and hasattr(self, '_last_frame_tracks'):
+                        processor.set_frame_tracks(self._last_frame_tracks)
+                    if hasattr(processor, 'set_head_poses') and hasattr(self, '_last_head_poses'):
+                        processor.set_head_poses(self._last_head_poses)
+                    # Store rule engine events for temporal processor
+                    if hasattr(processor, 'get_last_frame_events'):
+                        self._last_rule_engine_events = processor.get_last_frame_events()
+                elif processor_name == "TemporalProcessor":
+                    # Pass rule engine events and tracks to temporal processor
+                    if hasattr(processor, 'set_rule_engine_events') and hasattr(self, '_last_rule_engine_events'):
+                        processor.set_rule_engine_events(self._last_rule_engine_events)
+                    if hasattr(processor, 'set_frame_tracks') and hasattr(self, '_last_frame_tracks'):
+                        processor.set_frame_tracks(self._last_frame_tracks)
                         
             except Exception as e:
                 self.logger.error(f"Error in processor {processor.get_name()}: {e}")

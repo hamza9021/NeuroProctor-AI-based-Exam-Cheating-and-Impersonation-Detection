@@ -49,6 +49,7 @@ class PoseProcessor(BaseProcessor):
         self.current_timestamp: float = 0.0
         self.last_pose_result: Optional[PoseResult] = None
         self.all_pose_results: List[PoseResult] = []
+        self.last_frame_tracks = None
 
     def initialize(self) -> None:
         """Initialize the pose estimator (load model)."""
@@ -76,6 +77,10 @@ class PoseProcessor(BaseProcessor):
             timestamp=self.current_timestamp,
         )
 
+        # Associate poses with Track IDs if tracking data is available
+        if self.last_frame_tracks:
+            pose_result = self._associate_poses_with_tracks(pose_result)
+
         # Store pose result
         self.last_pose_result = pose_result
         self.all_pose_results.append(pose_result)
@@ -86,9 +91,11 @@ class PoseProcessor(BaseProcessor):
         # Log detection summary periodically
         if self.current_frame_number % 100 == 0:
             person_count = pose_result.get_person_count()
+            tracked_count = sum(1 for p in pose_result.persons if p.track_id is not None)
             self.logger.info(
                 f"Frame {self.current_frame_number}: "
                 f"Persons: {person_count}, "
+                f"Tracked: {tracked_count}, "
                 f"Inference: {pose_result.inference_time_ms:.2f}ms"
             )
 
@@ -132,3 +139,44 @@ class PoseProcessor(BaseProcessor):
         """Clear the history of all pose results."""
         self.all_pose_results.clear()
         self.last_pose_result = None
+    
+    def set_frame_tracks(self, frame_tracks) -> None:
+        """
+        Set frame tracks from tracking processor.
+        
+        Args:
+            frame_tracks: FrameTracks object with track information
+        """
+        self.last_frame_tracks = frame_tracks
+    
+    def _associate_poses_with_tracks(self, pose_result) -> PoseResult:
+        """
+        Associate pose results with Track IDs using IoU matching.
+        
+        Args:
+            pose_result: PoseResult object with person poses
+            
+        Returns:
+            PoseResult with track IDs assigned to poses
+        """
+        from app.tracking.tracking_utils import calculate_iou
+        
+        if not self.last_frame_tracks or not self.last_frame_tracks.tracks:
+            return pose_result
+        
+        person_tracks = [t for t in self.last_frame_tracks.tracks if t.class_name == "person" and t.is_active()]
+        
+        for person_pose in pose_result.persons:
+            best_track = None
+            best_iou = 0.3  # IoU threshold for matching
+            
+            for track in person_tracks:
+                iou = calculate_iou(person_pose.bounding_box, track.bounding_box)
+                if iou > best_iou:
+                    best_iou = iou
+                    best_track = track
+            
+            if best_track:
+                person_pose.track_id = best_track.track_id
+        
+        return pose_result

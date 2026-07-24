@@ -6,7 +6,7 @@ from YOLO pose estimation.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 import numpy as np
 
 from app.pose.keypoints import Keypoints
@@ -20,6 +20,7 @@ class PersonPose:
     bounding_box: Tuple[int, int, int, int]  # (x1, y1, x2, y2)
     confidence: float
     keypoints: Keypoints
+    track_id: Optional[int] = None  # ByteTrack Track ID for persistent identity
 
     def get_center_point(self) -> Tuple[float, float]:
         """
@@ -42,6 +43,7 @@ class PersonPose:
         """
         return {
             "person_id": self.person_id,
+            "track_id": self.track_id,
             "bounding_box": self.bounding_box,
             "confidence": self.confidence,
             "keypoints": self.keypoints.to_dict(),
@@ -60,6 +62,7 @@ class PersonPose:
         """
         return cls(
             person_id=data.get("person_id", 0),
+            track_id=data.get("track_id"),
             bounding_box=tuple(data.get("bounding_box", (0, 0, 0, 0))),
             confidence=data.get("confidence", 0.0),
             keypoints=Keypoints.from_dict(data.get("keypoints", {})),

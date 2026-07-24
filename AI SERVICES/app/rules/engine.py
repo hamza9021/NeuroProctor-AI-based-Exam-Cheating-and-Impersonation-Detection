@@ -55,6 +55,7 @@ class RuleEngine:
         timestamp: float,
         detections: Optional = None,
         pose_result: Optional = None,
+        head_poses: Optional = None,
     ) -> FrameEvents:
         """
         Process a frame through the rule engine.
@@ -65,6 +66,7 @@ class RuleEngine:
             timestamp: Frame timestamp
             detections: FrameDetections object
             pose_result: PoseResult object
+            head_poses: FrameHeadPoses object with head pose estimates
 
         Returns:
             FrameEvents object containing all generated events
@@ -78,6 +80,7 @@ class RuleEngine:
             timestamp=timestamp,
             detections=detections,
             pose_result=pose_result,
+            head_poses=head_poses,
         )
 
         # Evaluate all rules

@@ -38,9 +38,19 @@ class ObjectDetector:
             device: Device to run inference on (uses settings default if not provided)
         """
         self.logger = get_logger(__name__)
-        self.model_path = Path(model_path) if model_path else settings.MODEL_PATH
-        self.confidence_threshold = confidence_threshold if confidence_threshold is not None else settings.CONFIDENCE_THRESHOLD
-        self.iou_threshold = iou_threshold if iou_threshold is not None else settings.IOU_THRESHOLD
+        
+        # Use configuration from settings
+        if model_path:
+            model_path_obj = Path(model_path)
+            if model_path_obj.is_absolute():
+                self.model_path = model_path_obj
+            else:
+                self.model_path = settings.MODELS_DIR / model_path
+        else:
+            self.model_path = settings.MODELS_DIR / settings.OBJECT_DETECTION_MODEL
+        
+        self.confidence_threshold = confidence_threshold if confidence_threshold is not None else settings.DETECTION_CONFIDENCE_THRESHOLD
+        self.iou_threshold = iou_threshold if iou_threshold is not None else settings.DETECTION_IOU_THRESHOLD
         self.device = device if device else settings.DEVICE
         self.allowed_classes = settings.ALLOWED_CLASSES
         self.class_colors = settings.CLASS_COLORS
@@ -60,12 +70,14 @@ class ObjectDetector:
             self.logger.warning("Model already loaded, skipping")
             return
 
+        start_time = time.time()
+
         try:
             # Check if model file exists
             if not self.model_path.exists():
                 self.logger.warning(f"Model file not found at {self.model_path}, downloading from Ultralytics...")
                 # Ultralytics will auto-download if model name is provided
-                self.model = YOLO(settings.MODEL_NAME)
+                self.model = YOLO(settings.OBJECT_DETECTION_MODEL)
             else:
                 self.model = YOLO(str(self.model_path))
 
@@ -76,8 +88,12 @@ class ObjectDetector:
                 self.model.to(self.device)
 
             self.is_loaded = True
+            loading_time = time.time() - start_time
+            
             self.logger.info(f"YOLO model loaded successfully from {self.model_path}")
+            self.logger.info(f"Model: {settings.OBJECT_DETECTION_MODEL}")
             self.logger.info(f"Using device: {self.model.device}")
+            self.logger.info(f"Model loading time: {loading_time:.2f}s")
 
         except Exception as e:
             self.logger.error(f"Failed to load YOLO model: {e}")
