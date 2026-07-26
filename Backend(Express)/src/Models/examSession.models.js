@@ -43,6 +43,11 @@ const examSessionSchema = new mongoose.Schema(
       default: "scheduled",
     },
 
+    verified: {
+      type: Boolean,
+      default: false
+    },
+
     startedAt: {
       type: Date,
       default: null,
@@ -58,10 +63,8 @@ const examSessionSchema = new mongoose.Schema(
   }
 );
 
-examSessionSchema.index({ examId: 1 });
-examSessionSchema.index({ invigilatorId: 1 });
+
 examSessionSchema.index({ status: 1 });
-examSessionSchema.index({ sessionCode: 1 });
 
 const ExamSession = mongoose.model("ExamSession", examSessionSchema);
 

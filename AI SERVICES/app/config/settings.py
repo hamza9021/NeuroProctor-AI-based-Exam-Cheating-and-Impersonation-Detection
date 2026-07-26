@@ -35,6 +35,10 @@ class Settings(BaseSettings):
     # Must match the React frontend origin exactly (no trailing slash).
     CORS_ORIGIN: str = "http://localhost:5173"
 
+    # ── Express Backend ───────────────────────────────────────────────────────
+    # URL of the Express backend for API communication
+    EXPRESS_BACKEND_URL: str = "http://localhost:8080"
+
     # ── MongoDB ───────────────────────────────────────────────────────────────
     MONGO_URI: str = "mongodb://localhost:27017/neuroproctor"
     MONGO_DB_NAME: str = "neuroproctor"

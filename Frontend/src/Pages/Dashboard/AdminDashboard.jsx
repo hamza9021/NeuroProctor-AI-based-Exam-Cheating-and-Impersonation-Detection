@@ -1,6 +1,6 @@
 import Layout from "../../components/Layout/Layout";
 import Card from "../../components/ui/Card";
-import { Users, UserCheck, Clock, FileText, TrendingUp, ShieldCheck, UserX, Plus, ArrowRight } from "lucide-react";
+import { Users, UserCheck, Clock, FileText, TrendingUp, ShieldCheck, UserX, Plus, ArrowRight, Video } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import adminApis from "../../apis/Admin/admin.apis.js";
 import Spinner from "../../components/ui/Spinner";
@@ -157,7 +157,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card 
             padding="md" 
             className="cursor-pointer hover:shadow-lg transition-shadow"
@@ -194,6 +194,26 @@ const AdminDashboard = () => {
             </div>
             <div className="mt-4 flex items-center text-accent">
               <span className="text-sm font-medium">Manage Exams</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </div>
+          </Card>
+
+          <Card 
+            padding="md" 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/examSessions')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Exam Sessions</h3>
+                <p className="text-sm text-neutral-500">Assign invigilators and manage sessions</p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <Video className="w-6 h-6 text-green-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-accent">
+              <span className="text-sm font-medium">Manage Sessions</span>
               <ArrowRight className="w-4 h-4 ml-2" />
             </div>
           </Card>

@@ -1,0 +1,406 @@
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import examSessionApis from "../../apis/ExamSessions/examSessions.apis.js";
+import { useNavigate } from "react-router-dom";
+import { Search, ChevronUp, ChevronDown, Eye, Trash2, Calendar, Clock, Video, Shield, AlertCircle, CheckCircle, Plus } from "lucide-react";
+import Button from "../ui/Button";
+import Badge from "../ui/Badge";
+import Spinner from "../ui/Spinner";
+import EmptyState from "../ui/EmptyState";
+import ErrorState from "../ui/ErrorState";
+import Skeleton from "../ui/Skeleton";
+import Card from "../ui/Card";
+import ExamSessionFormModal from "./ExamSessionFormModal";
+
+export default function ExamSessionsList() {
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
+
+    const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(10);
+    const [search, setSearch] = useState("");
+    const [sortBy, setSortBy] = useState("createdAt");
+    const [sortOrder, setSortOrder] = useState("desc");
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
+    const {
+        data,
+        isLoading,
+        isFetching,
+        isError,
+        error,
+    } = useQuery({
+        queryKey: [
+            "examSessions",
+            page,
+            limit,
+            search,
+            sortBy,
+            sortOrder,
+        ],
+        queryFn: () =>
+            examSessionApis.getExamSessions(
+                page,
+                limit,
+                search,
+                sortBy,
+                sortOrder
+            ),
+        placeholderData: (previousData) => previousData,
+    });
+
+    const { mutate: deleteSession } = useMutation({
+        mutationFn: (sessionId) =>
+            examSessionApis.deleteExamSession(sessionId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["examSessions"] });
+        },
+    });
+
+    const handleDelete = (sessionId) => {
+        if (window.confirm("Are you sure you want to delete this exam session?")) {
+            deleteSession(sessionId);
+        }
+    };
+
+    const examSessions = data?.examSessions || [];
+    const total = data?.pagination?.total || 0;
+    const totalPages = Math.ceil(total / limit);
+
+    // Calculate statistics
+    const activeCount = examSessions.filter(session => session.status === "active").length;
+    const completedCount = examSessions.filter(session => session.status === "completed").length;
+    const scheduledCount = examSessions.filter(session => session.status === "scheduled").length;
+
+    const handleSort = (field) => {
+        if (sortBy === field) {
+            setSortOrder((prev) =>
+                prev === "asc" ? "desc" : "asc"
+            );
+        } else {
+            setSortBy(field);
+            setSortOrder("asc");
+        }
+
+        setPage(1);
+    };
+
+    const SortIcon = ({ field }) => {
+        if (sortBy !== field) return null;
+        return sortOrder === "asc" ? (
+            <ChevronUp className="w-4 h-4" />
+        ) : (
+            <ChevronDown className="w-4 h-4" />
+        );
+    };
+
+    const getStatusBadge = (status) => {
+        switch (status) {
+            case "active":
+                return <Badge variant="success">Active</Badge>;
+            case "completed":
+                return <Badge variant="info">Completed</Badge>;
+            case "scheduled":
+                return <Badge variant="neutral">Scheduled</Badge>;
+            case "waiting":
+                return <Badge variant="warning">Waiting</Badge>;
+            case "processing":
+                return <Badge variant="warning">Processing</Badge>;
+            case "cancelled":
+                return <Badge variant="error">Cancelled</Badge>;
+            default:
+                return <Badge variant="neutral">{status}</Badge>;
+        }
+    };
+
+    const getModeBadge = (mode) => {
+        switch (mode) {
+            case "live":
+                return <Badge variant="success">Live</Badge>;
+            case "offline":
+                return <Badge variant="neutral">Offline</Badge>;
+            default:
+                return <Badge variant="neutral">{mode}</Badge>;
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-64 w-full" />
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <ErrorState
+                title="Failed to load exam sessions"
+                description={error.message || "Please try again later."}
+            />
+        );
+    }
+
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 className="text-xl font-semibold text-neutral-900">Exam Sessions</h2>
+                    <p className="text-sm text-neutral-500 mt-1">
+                        Manage exam sessions and assign invigilators
+                    </p>
+                </div>
+                <Button
+                    onClick={() => setShowCreateModal(true)}
+                    className="flex items-center gap-2"
+                >
+                    <Plus className="w-4 h-4" />
+                    Create Session
+                </Button>
+            </div>
+
+            {/* Statistics Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card padding="md">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-neutral-500">Total Sessions</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{total}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                            <Video className="w-6 h-6 text-accent" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card padding="md">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-neutral-500">Active</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{activeCount}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                            <CheckCircle className="w-6 h-6 text-green-600" />
+                        </div>
+                    </div>
+                </Card>
+
+                <Card padding="md">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm text-neutral-500">Scheduled</p>
+                            <p className="text-2xl font-semibold text-neutral-900 mt-1">{scheduledCount}</p>
+                        </div>
+                        <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-6 h-6 text-blue-600" />
+                        </div>
+                    </div>
+                </Card>
+            </div>
+
+            {/* Search and Filter */}
+            <div className="flex flex-col sm:flex-row gap-4">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+                    <input
+                        type="text"
+                        placeholder="Search sessions by code or status..."
+                        value={search}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                            setPage(1);
+                        }}
+                        className="w-full pl-10 pr-4 py-2 border border-neutral-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                    />
+                </div>
+
+                <select
+                    value={limit}
+                    onChange={(e) => {
+                        setLimit(Number(e.target.value));
+                        setPage(1);
+                    }}
+                    className="px-4 py-2 border border-neutral-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
+                >
+                    <option value={10}>10 per page</option>
+                    <option value={20}>20 per page</option>
+                    <option value={50}>50 per page</option>
+                    <option value={100}>100 per page</option>
+                </select>
+
+                {isFetching && (
+                    <div className="flex items-center gap-2 text-sm text-neutral-500">
+                        <Spinner size="sm" />
+                        <span>Updating...</span>
+                    </div>
+                )}
+            </div>
+
+            {/* Table */}
+            <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full">
+                        <thead>
+                            <tr className="border-b border-neutral-200 bg-neutral-50">
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Session Code
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Invigilator
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Mode
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Status
+                                </th>
+                                <th
+                                    className="px-6 py-3 text-left text-xs font-semibold text-neutral-600 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 transition-colors"
+                                    onClick={() => handleSort("createdAt")}
+                                >
+                                    <div className="flex items-center gap-1">
+                                        Created
+                                        <SortIcon field="createdAt" />
+                                    </div>
+                                </th>
+                                <th className="px-6 py-3 text-right text-xs font-semibold text-neutral-600 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+
+                        <tbody className="divide-y divide-neutral-200">
+                            {examSessions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6">
+                                        <EmptyState
+                                            icon={Search}
+                                            title="No exam sessions found"
+                                            description={search ? "Try adjusting your search terms" : "Get started by creating a new exam session"}
+                                        />
+                                    </td>
+                                </tr>
+                            ) : (
+                                examSessions.map((session) => (
+                                    <tr
+                                        key={session._id}
+                                        className="hover:bg-neutral-50 transition-colors cursor-pointer"
+                                        onClick={() => navigate(`/examSessions/${session._id}`)}
+                                    >
+                                        <td className="px-6 py-4">
+                                            <div className="font-medium text-neutral-900">
+                                                {session.sessionCode}
+                                            </div>
+                                            <div className="text-sm text-neutral-500 mt-1">
+                                                ID: {session._id}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm text-neutral-900">
+                                                {session.invigilatorId?.name || "Not assigned"}
+                                            </div>
+                                            <div className="text-xs text-neutral-500 mt-1">
+                                                {session.invigilatorId?.email || ""}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {getModeBadge(session.mode)}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            {getStatusBadge(session.status)}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-neutral-600">
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="w-4 h-4" />
+                                                {new Date(session.createdAt).toLocaleDateString()}
+                                            </div>
+                                            <div className="text-xs text-neutral-500 mt-1">
+                                                {new Date(session.createdAt).toLocaleTimeString()}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        navigate(`/examSessions/${session._id}`);
+                                                    }}
+                                                    className="p-2 text-neutral-400 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                                                    title="View"
+                                                >
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(session._id);
+                                                    }}
+                                                    className="p-2 text-neutral-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <p className="text-sm text-neutral-600">
+                    Showing{" "}
+                    <span className="font-medium text-neutral-900">
+                        {examSessions.length === 0 ? 0 : (page - 1) * limit + 1}
+                    </span>
+                    {" to "}
+                    <span className="font-medium text-neutral-900">
+                        {Math.min(page * limit, total)}
+                    </span>
+                    {" of "}
+                    <span className="font-medium text-neutral-900">{total}</span>
+                    {" results"}
+                </p>
+
+                <div className="flex items-center gap-2">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page === 1}
+                        onClick={() => setPage((prev) => prev - 1)}
+                    >
+                        Previous
+                    </Button>
+
+                    <span className="px-3 py-2 text-sm text-neutral-600">
+                        Page {page} of {totalPages || 1}
+                    </span>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page >= totalPages}
+                        onClick={() => setPage((prev) => prev + 1)}
+                    >
+                        Next
+                    </Button>
+                </div>
+            </div>
+
+            {/* Create Modal */}
+            <ExamSessionFormModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={() => {
+                    queryClient.invalidateQueries({ queryKey: ["examSessions"] });
+                }}
+            />
+        </div>
+    );
+}

@@ -1,5 +1,4 @@
 import { model, Schema } from "mongoose";
-import User from "./user.models.js";
 
 const examSchema = new Schema(
     {
@@ -48,7 +47,7 @@ const examSchema = new Schema(
         },
         createdBy: {
             type: Schema.Types.ObjectId,
-            ref: User,
+            ref: "User",
             required: true,
         },
     },
@@ -64,10 +63,10 @@ examSchema.index({ createdBy: 1 });
 
 examSchema.index({ startTime: 1 });
 
-
 examSchema.index({ endTime: 1 });
 
 examSchema.index({ courseCode: 1 });
+
 examSchema.index({ courseName: 1 });
 
 examSchema.index({
@@ -79,11 +78,6 @@ examSchema.index({
     createdBy: 1,
     status: 1,
 });
-
-examSchema.index({
-    courseCode: 1,
-    semester: 1,
-}, { sparse: true });
 
 const Exam = model("Exam", examSchema);
 

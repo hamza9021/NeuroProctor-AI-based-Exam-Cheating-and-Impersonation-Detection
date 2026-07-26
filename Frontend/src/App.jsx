@@ -5,6 +5,8 @@ import Student from "./components/Students/Student";
 import StudentDetail from "./components/Students/StudentDetail";
 import Exam from "./components/Exams/Exam";
 import ExamDetail from "./components/Exams/ExamDetail";
+import ExamSessionsList from "./components/ExamSessions/ExamSessionsList";
+import ExamSessionDetail from "./components/ExamSessions/ExamSessionDetail";
 import Admin from "./components/Admin/Admin";
 import AdminDetail from "./components/Admin/AdminDetail";
 import InvigilatorDetail from "./components/Admin/InvigilatorDetail";
@@ -35,7 +37,7 @@ const App = () => {
                         <Route path="/students" element={<Student />} />
                         <Route path="/students/:studentId" element={<StudentDetail />} />
                         <Route path="/exams" element={<Exam />} />
-                        <Route path="/exams/:examId" element={<ExamDetail />} />
+                        <Route path="/examSessions" element={<ExamSessionsList />} />
                     </Route>
                     
                     <Route element={<InvigilatorProtectedRoute />}>
@@ -44,6 +46,9 @@ const App = () => {
                             element={<InvigilatorDashboard />}
                         />
                     </Route>
+
+                    <Route path="/exams/:examId" element={<ExamDetail />} />
+                    <Route path="/examSessions/:sessionId" element={<ExamSessionDetail />} />
                 </Route>
                 
                 <Route path="/unauthorized" element={<Unauthorized />} />

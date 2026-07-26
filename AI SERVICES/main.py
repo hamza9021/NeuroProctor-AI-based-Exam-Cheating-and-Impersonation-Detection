@@ -40,6 +40,7 @@ from app.config.settings import settings
 from app.core.exceptions import register_exception_handlers
 from app.middleware.logging import RequestLoggingMiddleware
 from app.services.backend.embedding_service import embedding_service
+from app.services.backend.video_client import video_analysis_client
 
 # =============================================================================
 # Logging configuration
@@ -102,7 +103,10 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     #    downloads the model weights (~300 MB).  Subsequent startups are fast.
     await embedding_service.initialize()
 
-    # d. Create output directories for AI processing
+    # d. Initialize video analysis client for Express backend communication
+    video_analysis_client.initialize()
+
+    # e. Create output directories for AI processing
     for directory in [
         settings.OUTPUT_DIR,
         settings.LOGS_DIR,
@@ -189,10 +193,11 @@ def create_app() -> FastAPI:
 
     # ── API routers ───────────────────────────────────────────────────────────
     # Import here (inside factory) to avoid circular import issues at module load.
-    from app.api.routes import health, student
+    from app.api.routes import health, student, video
 
     application.include_router(health.router, prefix="/api/v1")
     application.include_router(student.router, prefix="/api/v1")
+    application.include_router(video.router, prefix="/api/v1")
 
     logger.debug(
         "Registered routes: %s",

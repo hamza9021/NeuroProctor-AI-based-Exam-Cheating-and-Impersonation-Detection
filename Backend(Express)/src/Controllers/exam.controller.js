@@ -12,24 +12,32 @@ import Exam from "../Models/exam.models.js";
 
 const createExam = wrapperFunction(async (req, res) => {
     const { title, description, courseName, courseCode, duration, startTime, endTime } = req.body;
+    console.log("Received exam data:", req.body);
+    console.log("User:", req.user);
+    
     const user = req.user;
 
     if (!user) {
         throw new ApiError(404, "User Not Found");
     }
 
-    const exam = await Exam.create({
-        title,
-        description,
-        courseName,
-        courseCode,
-        duration,
-        startTime,
-        endTime,
-        createdBy: user._id,
-    });
+    try {
+        const exam = await Exam.create({
+            title,
+            description,
+            courseName,
+            courseCode,
+            duration: Number(duration),
+            startTime: new Date(startTime),
+            endTime: new Date(endTime),
+            createdBy: user._id,
+        });
 
-    return res.json(new ApiResponse(200, exam, "Exam Created Successfully"));
+        return res.json(new ApiResponse(200, exam, "Exam Created Successfully"));
+    } catch (error) {
+        console.error("Error creating exam:", error);
+        throw new ApiError(500, error.message || "Failed to create exam");
+    }
 });
 
 const getExams = wrapperFunction(async (req, res) => {
@@ -153,6 +161,27 @@ const getExam = wrapperFunction(async (req, res) => {
         throw new ApiError(404, "Exam Not Found");
     }
 
+    // Admin can view any exam
+    if (user.role === "admin") {
+        return res.json(new ApiResponse(200, exam, "Exams Data"));
+    }
+
+    // Invigilators can view exams assigned to them via exam sessions
+    if (user.role === "invigilator") {
+        const ExamSession = (await import("../Models/examSession.models.js")).default;
+        const assignedSession = await ExamSession.findOne({
+            examId: exam._id,
+            invigilatorId: user._id
+        });
+        
+        if (assignedSession) {
+            return res.json(new ApiResponse(200, exam, "Exams Data"));
+        }
+        
+        throw new ApiError(403, "You are not authorized to view this exam");
+    }
+
+    // Regular users can only view exams they created
     if (exam.createdBy.toString() !== user._id.toString()) {
         throw new ApiError(403, "You are not authorized to view this exam");
     }
