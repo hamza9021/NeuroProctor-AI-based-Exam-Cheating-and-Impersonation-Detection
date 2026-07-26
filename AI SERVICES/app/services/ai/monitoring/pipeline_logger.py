@@ -69,9 +69,10 @@ class PipelineLogger:
         """
         if self._session_id:
             data["session_id"] = self._session_id
+        logger.info("PipelineLogger: Emitting Socket.IO event '%s' with data: %s", event, data)
         # Use async emit properly
         try:
             await socket_manager.emit(event, data, room=None)
-            logger.info("Successfully emitted Socket.IO event: %s", event)
+            logger.info("PipelineLogger: Successfully emitted Socket.IO event: %s", event)
         except Exception as e:
-            logger.error("Failed to emit Socket.IO event: %s", e)
+            logger.error("PipelineLogger: Failed to emit Socket.IO event: %s", e)

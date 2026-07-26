@@ -20,10 +20,28 @@ class SocketManager:
         self._sio = socketio.AsyncServer(
             async_mode="asgi",
             cors_allowed_origins="*",
-            logger=False,
         )
         self._app = socketio.ASGIApp(self._sio)
+        
+        # Register connection event handlers
+        @self._sio.event
+        async def connect(sid, environ):
+            logger.info(f"Client connected: {sid}")
+        
+        @self._sio.event
+        async def disconnect(sid):
+            logger.info(f"Client disconnected: {sid}")
+        
         logger.info("SocketManager initialized")
+    
+    @property
+    def sio(self) -> socketio.AsyncServer:
+        """Get the Socket.IO server instance.
+        
+        Returns:
+            The Socket.IO AsyncServer instance.
+        """
+        return self._sio
     
     @property
     def app(self) -> socketio.ASGIApp:
@@ -42,12 +60,12 @@ class SocketManager:
             data: The event data.
             room: Optional room to emit to.
         """
-        logger.debug("Emitting Socket.IO event: %s, data: %s, room: %s", event, data, room)
+        logger.info("Emitting Socket.IO event: %s, data: %s, room: %s", event, data, room)
         if room:
             await self._sio.emit(event, data, room=room)
         else:
             await self._sio.emit(event, data)
-        logger.debug("Event emitted successfully: %s", event)
+        logger.info("Event emitted successfully: %s", event)
     
     async def join_room(self, sid: str, room: str) -> None:
         """Join a client to a room.

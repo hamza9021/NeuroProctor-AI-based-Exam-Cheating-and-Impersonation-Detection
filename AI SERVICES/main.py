@@ -31,6 +31,7 @@ from pathlib import Path
 from typing import AsyncGenerator
 
 import uvicorn
+import socketio
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -201,8 +202,8 @@ def create_app() -> FastAPI:
     application.include_router(video.router, prefix="/api/v1")
 
     # ── Socket.IO integration ─────────────────────────────────────────────────
-    # Mount Socket.IO ASGI app to FastAPI
-    application.mount("/socket.io", socket_manager.app)
+    # Don't mount - the wrapping happens in __main__
+    logger.debug("Socket.IO will be wrapped in __main__ for WebSocket support")
 
     logger.debug(
         "Registered routes: %s",
@@ -217,7 +218,8 @@ def create_app() -> FastAPI:
 # =============================================================================
 # This module-level `app` is what Uvicorn imports:
 #   uvicorn main:app --reload
-app: FastAPI = create_app()
+fastapi_app: FastAPI = create_app()
+app = socketio.ASGIApp(socket_manager.sio, fastapi_app)
 
 
 # =============================================================================
@@ -230,7 +232,4 @@ if __name__ == "__main__":
         port=settings.APP_PORT,
         reload=settings.APP_DEBUG,
         log_level="debug" if settings.APP_DEBUG else "info",
-        # Proxy headers for deployment behind nginx / load balancers
-        proxy_headers=True,
-        forwarded_allow_ips="*",
     )
