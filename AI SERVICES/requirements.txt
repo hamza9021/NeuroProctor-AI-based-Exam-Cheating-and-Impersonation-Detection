@@ -44,3 +44,8 @@ httpx>=0.27.0                    # Async HTTP client for Express backend communi
 # ── Real-Time Communication ───────────────────────────────────────────────────────
 python-socketio[asyncio]>=5.11.0  # Socket.IO for real-time event broadcasting
 aiohttp>=3.9.0                    # Async HTTP client (required by python-socketio)
+
+# ── YOLO Object Detection ───────────────────────────────────────────────────────────
+ultralytics>=8.1.0                # YOLOv8 object detection library
+torch>=2.1.0                      # PyTorch (required by ultralytics)
+torchvision>=0.16.0               # Torch vision utilities (required by ultralytics)

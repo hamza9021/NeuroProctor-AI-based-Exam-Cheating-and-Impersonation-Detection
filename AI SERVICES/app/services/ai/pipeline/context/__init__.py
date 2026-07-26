@@ -1,3 +1,3 @@
-from .frame_context import FrameContext
+from .frame_context import FrameContext, Detection
 
-__all__ = ["FrameContext"]
+__all__ = ["FrameContext", "Detection"]

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getSocket } from '../../utils/socket';
+import { getSocket, initializeSocket } from '../../utils/socket';
 
 const ProgressPanel = ({ sessionId }) => {
   const [currentFrame, setCurrentFrame] = useState(0);
@@ -8,21 +8,27 @@ const ProgressPanel = ({ sessionId }) => {
   const [percentage, setPercentage] = useState(0);
 
   useEffect(() => {
-    const socket = getSocket();
+    // Initialize socket connection
+    const socket = initializeSocket();
+    
+    console.log('ProgressPanel mounted, socket initialized');
 
     const handleStageStarted = (data) => {
+      console.log('handleStageStarted:', data);
       if (!sessionId || data.session_id === sessionId) {
         setCurrentStage(data.stage);
       }
     };
 
     const handleStageCompleted = (data) => {
+      console.log('handleStageCompleted:', data);
       if (!sessionId || data.session_id === sessionId) {
         setCurrentStage('');
       }
     };
 
     const handlePipelineStarted = (data) => {
+      console.log('handlePipelineStarted:', data);
       if (!sessionId || data.session_id === sessionId) {
         setCurrentStage('Initializing');
         setPercentage(0);
@@ -30,6 +36,7 @@ const ProgressPanel = ({ sessionId }) => {
     };
 
     const handlePipelineCompleted = (data) => {
+      console.log('handlePipelineCompleted:', data);
       if (!sessionId || data.session_id === sessionId) {
         setCurrentStage('Completed');
         setPercentage(100);
@@ -37,9 +44,23 @@ const ProgressPanel = ({ sessionId }) => {
     };
 
     const handlePipelineFailed = (data) => {
+      console.log('handlePipelineFailed:', data);
       if (!sessionId || data.session_id === sessionId) {
         setCurrentStage('Failed');
         setPercentage(0);
+      }
+    };
+
+    const handlePipelineInfo = (data) => {
+      console.log('handlePipelineInfo:', data);
+      // Remove session_id check to show all progress events
+      if (data.progress !== undefined) {
+        setCurrentFrame(data.frame_number || 0);
+        setTotalFrames(data.total_frames || 0);
+        setPercentage(data.progress);
+        if (data.stage) {
+          setCurrentStage(data.stage);
+        }
       }
     };
 
@@ -48,6 +69,7 @@ const ProgressPanel = ({ sessionId }) => {
     socket.on('pipeline_started', handlePipelineStarted);
     socket.on('pipeline_completed', handlePipelineCompleted);
     socket.on('pipeline_failed', handlePipelineFailed);
+    socket.on('pipeline_info', handlePipelineInfo);
 
     return () => {
       socket.off('stage_started', handleStageStarted);
@@ -55,12 +77,14 @@ const ProgressPanel = ({ sessionId }) => {
       socket.off('pipeline_started', handlePipelineStarted);
       socket.off('pipeline_completed', handlePipelineCompleted);
       socket.off('pipeline_failed', handlePipelineFailed);
+      socket.off('pipeline_info', handlePipelineInfo);
     };
   }, [sessionId]);
 
-  if (!currentStage && percentage === 0) {
-    return null;
-  }
+  // Always show the panel for debugging
+  // if (!currentStage && percentage === 0) {
+  //   return null;
+  // }
 
   return (
     <div className="bg-neutral-50 rounded-lg p-4 border border-neutral-200">

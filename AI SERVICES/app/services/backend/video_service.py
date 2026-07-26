@@ -30,6 +30,9 @@ from app.core.exceptions import (
 )
 from app.services.backend.cloudinary_service import cloudinary_service
 from app.services.backend.video_client import video_analysis_client
+from app.services.ai.detectors.yolo.config import YOLOConfig
+from app.services.ai.processors.video_processor import VideoProcessor
+from app.services.ai.monitoring import PipelineLogger
 
 logger = logging.getLogger(__name__)
 
@@ -217,12 +220,8 @@ class VideoService:
         """
         Process video through the AI cheating detection pipeline.
 
-        This is a placeholder for the actual AI processing.
-        In a real implementation, this would:
-        1. Run object detection
-        2. Track faces
-        3. Detect suspicious behavior
-        4. Generate annotations
+        This runs YOLO object detection on each frame and generates
+        an annotated video with bounding boxes.
 
         Args:
             video_path: Path to input video
@@ -235,25 +234,34 @@ class VideoService:
         if event_emitter:
             await event_emitter.emit_info("Processing video through AI pipeline")
 
-        # Placeholder: In real implementation, this would call the AI service
-        # For now, we'll just copy the file to simulate processing
-        output_path = self._annotated_dir / f"processed_{video_path.name}"
-
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            lambda: self._copy_file(video_path, output_path),
+        # Initialize YOLO configuration
+        yolo_config = YOLOConfig(
+            model_path="yolov8m.pt",  # Will be downloaded by ultralytics
+            confidence=0.25,
+            iou=0.45,
+            image_size=640,
+            device="auto",
         )
 
-        logger.info("AI pipeline completed. Output: %s", output_path)
-        if event_emitter:
-            await event_emitter.emit_info("AI pipeline completed")
-        return output_path
+        # Initialize pipeline logger
+        pipeline_logger = PipelineLogger(session_id="video-processing")
 
-    def _copy_file(self, src: Path, dst: Path) -> None:
-        """Synchronously copy a file (runs in thread pool)."""
-        import shutil
-        shutil.copy2(src, dst)
+        # Create video processor
+        processor = VideoProcessor(yolo_config, pipeline_logger)
+
+        # Generate output path
+        output_path = self._annotated_dir / f"processed_{video_path.name}"
+
+        # Process video (async call)
+        stats = await processor.process_video(video_path, output_path)
+
+        logger.info(f"AI pipeline completed. Output: {output_path}")
+        logger.info(f"Detection statistics: {stats}")
+
+        if event_emitter:
+            await event_emitter.emit_info(f"AI pipeline completed. Detected: {stats['detections']}")
+
+        return output_path
 
     async def _upload_to_cloudinary(
         self,

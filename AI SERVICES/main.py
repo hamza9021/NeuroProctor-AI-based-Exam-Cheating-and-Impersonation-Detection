@@ -172,7 +172,7 @@ def create_app() -> FastAPI:
     # origin matches allow_origins exactly.
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=[settings.CORS_ORIGIN],
+        allow_origins=["*"],  # Temporarily allow all origins for debugging
         allow_credentials=True,  # ← Critical: enables HttpOnly cookie forwarding
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         allow_headers=[
