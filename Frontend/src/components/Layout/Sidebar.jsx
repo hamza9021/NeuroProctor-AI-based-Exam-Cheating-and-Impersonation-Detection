@@ -27,8 +27,8 @@ const Sidebar = () => {
     { name: 'Exams', href: '/exams', icon: FileText },
     { name: 'Settings', href: '/settings', icon: Settings },
   ].filter(item => {
-    // Hide Students and Exams for admin
-    if (user?.role === 'admin' && (item.name === 'Students' || item.name === 'Exams')) {
+    // Hide Students and Exams for invigilator
+    if (user?.role === 'invigilator' && (item.name === 'Students' || item.name === 'Exams')) {
       return false;
     }
     // Hide admin-only items for non-admin users

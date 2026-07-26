@@ -32,6 +32,10 @@ const App = () => {
                         <Route path="/admin/:id" element={<AdminDetail />} />
                         <Route path="/invigilator/:id" element={<InvigilatorDetail />} />
                         <Route path="/admin/exam/:id" element={<AdminExamDetail />} />
+                        <Route path="/students" element={<Student />} />
+                        <Route path="/students/:studentId" element={<StudentDetail />} />
+                        <Route path="/exams" element={<Exam />} />
+                        <Route path="/exams/:examId" element={<ExamDetail />} />
                     </Route>
                     
                     <Route element={<InvigilatorProtectedRoute />}>
@@ -39,10 +43,6 @@ const App = () => {
                             path="/invigilator/dashboard"
                             element={<InvigilatorDashboard />}
                         />
-                        <Route path="/students" element={<Student />} />
-                        <Route path="/students/:studentId" element={<StudentDetail />} />
-                        <Route path="/exams" element={<Exam />} />
-                        <Route path="/exams/:examId" element={<ExamDetail />} />
                     </Route>
                 </Route>
                 

@@ -1,36 +1,39 @@
-# AI Services - Video Processing Pipeline Requirements
+# =============================================================================
+# NeuroProctor FastAPI AI Backend — Python Dependencies
+# =============================================================================
+# Install with: pip install -r requirements.txt
+#
+# GPU Note: onnxruntime-gpu requires a compatible CUDA installation.
+# If no GPU is available, ONNX Runtime will fall back to CPUExecutionProvider.
+# To force CPU-only, replace onnxruntime-gpu with onnxruntime.
+# =============================================================================
 
-# Core dependencies
-opencv-python>=4.8.0
-numpy>=1.24.0,<2.0.0
+# ── Web Framework ─────────────────────────────────────────────────────────────
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+python-multipart>=0.0.9          # Required for multipart/form-data (file uploads)
 
-# Progress bar
-tqdm>=4.65.0
+# ── JWT Authentication ────────────────────────────────────────────────────────
+python-jose[cryptography]>=3.3.0 # JWT decode/verify (python-jose with RSA/HMAC)
 
-# Type hints (optional but recommended)
-typing-extensions>=4.5.0
-setuptools>=60.0.0,<70.0.0
+# ── MongoDB Async Driver ──────────────────────────────────────────────────────
+motor>=3.4.0                     # Async Motor driver wrapping PyMongo
+pymongo>=4.7.0                   # PyMongo (required by Motor for BSON, etc.)
 
-# YOLO Object Detection (Phase 2)
-ultralytics>=8.0.0
-# PyTorch versions compatible with sixdrepnet 0.1.6
-# For GPU support: pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-# For CPU-only: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-torch>=2.0.0,<2.2.0
-torchvision>=0.15.0,<0.17.0
+# ── Cloudinary ────────────────────────────────────────────────────────────────
+cloudinary>=1.40.0               # Official Cloudinary Python SDK
 
-# Multi-Object Tracking (Phase 6)
-# Using DeepSORT for robust multi-object tracking with re-identification
-deep-sort-realtime>=1.3.0
+# ── InsightFace + GPU Runtime ─────────────────────────────────────────────────
+insightface>=0.7.3               # ArcFace model: buffalo_l (512-dim embeddings)
+onnxruntime-gpu>=1.18.0          # ONNX GPU runtime (CUDA). See note above.
 
-# Head Pose Estimation (Phase 7)
-# Using 6DRepNet for accurate head orientation estimation
-# IMPORTANT: 6DRepNet requires specific PyTorch versions for compatibility
-# Install sixdrepnet: pip install sixdrepnet==0.1.6
-# If sixdrepnet is not installed, the head pose processor will be skipped automatically
-sixdrepnet==0.1.6
+# ── Image Processing ──────────────────────────────────────────────────────────
+opencv-python-headless>=4.9.0    # OpenCV without GUI (server-safe)
+numpy>=1.26.0                    # Numerical arrays for embeddings
+Pillow>=10.3.0                   # Image decoding utility
 
-# Future AI model dependencies (for future phases)
-# transformers>=4.30.0
-# timm>=0.9.0
-# scikit-learn>=1.3.0
+# ── Configuration & Validation ────────────────────────────────────────────────
+pydantic[email]>=2.7.0           # Data validation (v2) + EmailStr support
+pydantic-settings>=2.3.0         # BaseSettings for environment variable loading
+email-validator>=2.0.0           # Required by pydantic[email] for EmailStr fields
+python-dotenv>=1.0.0             # Load .env files

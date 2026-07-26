@@ -1,22 +1,13 @@
-# ==========================================================
+# =============================================================================
+# NeuroProctor AI Services — Git Ignore
+# =============================================================================
+
 # Python
-# ==========================================================
 __pycache__/
 *.py[cod]
 *$py.class
-*.pyc
 *.so
 .Python
-
-# Virtual Environments
-venv/
-env/
-ENV/
-.venv/
-env.bak/
-venv.bak/
-
-# Distribution / packaging
 build/
 develop-eggs/
 dist/
@@ -29,99 +20,44 @@ parts/
 sdist/
 var/
 wheels/
-share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-cover/
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 
-# IPython
-profile_default/
-ipython_config.py
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# pytype static type analyzer
-.pytype/
-
-# ==========================================================
 # Environment Variables
-# ==========================================================
 .env
-.env.*
-!.env.example
 
-# ==========================================================
-# AI Models
-# ==========================================================
+# Logs
+logs/
+*.log
+
+# Output Directories
+outputs/
+temp/
+annotated_videos/
+reports/
+evidence/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Models (large files)
 *.pt
 *.pth
 *.onnx
-*.engine
-*.ckpt
 *.weights
-*.bin
-*.tflite
-
-# Model directories
-AI Services/app/models/
-
-# HuggingFace Cache
-.huggingface/
-.cache/
-.cache/huggingface/
-
-# Torch Cache
-.torch/
-torch_cache/
-
-# ==========================================================
-# AI Services
-# ==========================================================
-AI Services/input_videos/
-AI Services/output_videos/
-AI Services/temp/
-AI Services/temp_frames/
-AI Services/logs/
-AI Services/reports/
-AI Services/frames/
-
-# ==========================================================
-# IDE
-# ==========================================================
-.vscode/
-.idea/
-.spyderproject
-.spyproject
-.ropeproject
-
-# ==========================================================
-# OS
-# ==========================================================
-.DS_Store
-Thumbs.db

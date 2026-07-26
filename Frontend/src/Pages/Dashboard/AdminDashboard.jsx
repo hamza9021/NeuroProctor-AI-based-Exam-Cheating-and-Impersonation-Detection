@@ -1,12 +1,15 @@
 import Layout from "../../components/Layout/Layout";
 import Card from "../../components/ui/Card";
-import { Users, UserCheck, Clock, FileText, TrendingUp, ShieldCheck, UserX } from "lucide-react";
+import { Users, UserCheck, Clock, FileText, TrendingUp, ShieldCheck, UserX, Plus, ArrowRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import adminApis from "../../apis/Admin/admin.apis.js";
 import Spinner from "../../components/ui/Spinner";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
+  const navigate = useNavigate();
+
   const { data: adminsData, isLoading: adminsLoading } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: () => adminApis.getAdmins(1, 100, ""),
@@ -149,6 +152,49 @@ const AdminDashboard = () => {
               <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                 <TrendingUp className="w-6 h-6 text-green-600" />
               </div>
+            </div>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card 
+            padding="md" 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/students')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Student Management</h3>
+                <p className="text-sm text-neutral-500">Add, edit, and manage student records</p>
+              </div>
+              <div className="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center">
+                <Users className="w-6 h-6 text-accent" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-accent">
+              <span className="text-sm font-medium">Manage Students</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </div>
+          </Card>
+
+          <Card 
+            padding="md" 
+            className="cursor-pointer hover:shadow-lg transition-shadow"
+            onClick={() => navigate('/exams')}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-neutral-900 mb-1">Exam Management</h3>
+                <p className="text-sm text-neutral-500">Create and manage exam schedules</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <FileText className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+            <div className="mt-4 flex items-center text-accent">
+              <span className="text-sm font-medium">Manage Exams</span>
+              <ArrowRight className="w-4 h-4 ml-2" />
             </div>
           </Card>
         </div>
