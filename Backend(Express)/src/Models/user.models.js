@@ -7,11 +7,14 @@ const userSchema = new Schema(
         fullName: {
             type: String,
             required: true,
+            trim: true,
         },
         email: {
             type: String,
             required: true,
             unique: true,
+            lowercase: true,
+            trim: true,
         },
         password: {
             type: String,
@@ -20,6 +23,7 @@ const userSchema = new Schema(
         phoneNumber: {
             type: String,
             required: true,
+            trim: true,
         },
         role: {
             type: String,
@@ -40,6 +44,7 @@ const userSchema = new Schema(
         },
         refreshToken: {
             type: String,
+            default: null,
         },
     },
     {
@@ -47,25 +52,23 @@ const userSchema = new Schema(
     }
 );
 
-userSchema.pre("save", async function (next) {
-    try {
-        if (this.isModified("password")) {
-            const hashedPassword = await bcrypt.hash(this.password, 10);
-            this.password = hashedPassword;
-        }
-    } catch (error) {
-        console.log(error);
-        next(error);
-    }
-});
+userSchema.index({ email: 1 }, { unique: true });
 
+userSchema.index({ role: 1 });
+
+userSchema.index({ isActive: 1 });
+
+userSchema.index({ isVerified: 1 });
+
+userSchema.index({ role: 1, isActive: 1 });
+
+userSchema.index({ role: 1, isVerified: 1 });
+
+userSchema.index({ createdAt: -1 });
+
+userSchema.pre("save", async function (next) { try { if (this.isModified("password")) { const hashedPassword = await bcrypt.hash(this.password, 10); this.password = hashedPassword; } } catch (error) { console.log(error); next(error); } });
 userSchema.methods.isPasswordMatch = async function (password) {
-    try {
-        return await bcrypt.compare(password, this.password);
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+    return bcrypt.compare(password, this.password);
 };
 
 userSchema.methods.generateAccessToken = function () {
@@ -77,7 +80,9 @@ userSchema.methods.generateAccessToken = function () {
             role: this.role,
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+        {
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+        }
     );
 };
 
@@ -90,9 +95,12 @@ userSchema.methods.generateRefreshToken = function () {
             role: this.role,
         },
         process.env.REFRESH_TOKEN_SECRET,
-        { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+        {
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
+        }
     );
 };
 
 const User = model("User", userSchema);
+
 export default User;

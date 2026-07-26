@@ -6,51 +6,85 @@ const examSchema = new Schema(
         title: {
             type: String,
             required: true,
+            trim: true,
         },
         description: {
             type: String,
             required: true,
+            trim: true,
         },
         courseName: {
             type: String,
-            required: true
+            required: true,
+            trim: true,
         },
         courseCode: {
             type: String,
-            required: true
+            required: true,
+            trim: true,
+            uppercase: true,
         },
         duration: {
             type: Number,
-            required: true
+            required: true,
         },
         startTime: {
             type: Date,
-            required: true
+            required: true,
         },
         endTime: {
             type: Date,
-            required: true
+            required: true,
         },
         status: {
+            type: String,
             enum: [
                 "scheduled",
                 "ongoing",
                 "completed",
                 "cancelled",
             ],
-            type: String,
             default: "scheduled",
         },
         createdBy: {
             type: Schema.Types.ObjectId,
             ref: User,
             required: true,
-        }
+        },
     },
     {
         timestamps: true,
     }
 );
 
+
+examSchema.index({ status: 1 });
+
+examSchema.index({ createdBy: 1 });
+
+examSchema.index({ startTime: 1 });
+
+
+examSchema.index({ endTime: 1 });
+
+examSchema.index({ courseCode: 1 });
+examSchema.index({ courseName: 1 });
+
+examSchema.index({
+    status: 1,
+    startTime: 1,
+});
+
+examSchema.index({
+    createdBy: 1,
+    status: 1,
+});
+
+examSchema.index({
+    courseCode: 1,
+    semester: 1,
+}, { sparse: true });
+
 const Exam = model("Exam", examSchema);
+
 export default Exam;
