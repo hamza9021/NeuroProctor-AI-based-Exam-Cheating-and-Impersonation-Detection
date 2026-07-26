@@ -26,6 +26,7 @@ from fastapi import APIRouter, Depends, File, Form, Request, UploadFile, status
 from app.api.dependencies import require_roles
 from app.core.responses import success_response
 from app.schemas.video import VideoProcessRequest, TokenPayload
+from app.services.ai.monitoring import EventEmitter, PipelineLogger
 from app.services.backend.video_service import video_service
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,10 @@ async def process_video(
     # Extract access token from cookies
     access_token = request.cookies.get("accessToken")
     
+    # Initialize logger and emitter for this session
+    pipeline_logger = PipelineLogger(session_id=sessionId)
+    event_emitter = EventEmitter(pipeline_logger)
+    
     logger.info(
         "Video processing request - Session: %s, Exam: %s, User: %s, Token present: %s",
         sessionId,
@@ -93,9 +98,16 @@ async def process_video(
         bool(access_token),
     )
     
+    # Emit video received event
+    logger.info("Emitting video_received event for session: %s", sessionId)
+    await event_emitter.emit_info("Video received", {"session_id": sessionId, "exam_id": examId})
+    
     start_time = time.time()
     
     try:
+        # Emit video validated event
+        await event_emitter.emit_info("Video validated")
+        
         # Process video through AI pipeline
         result = await video_service.process_video(
             video_file=video,
@@ -103,6 +115,7 @@ async def process_video(
             exam_id=examId,
             invigilator_id=token_payload.user_id,
             access_token=access_token,
+            event_emitter=event_emitter,
         )
         
         processing_time = time.time() - start_time
@@ -111,6 +124,9 @@ async def process_video(
             sessionId,
             processing_time,
         )
+        
+        # Emit processing completed event
+        await event_emitter.emit_info("Processing completed", {"processing_time": processing_time})
         
         return success_response(
             message="Video processed successfully",
@@ -127,4 +143,6 @@ async def process_video(
             str(e),
             exc_info=True,
         )
+        # Emit pipeline failed event
+        await event_emitter.emit_error(f"Processing failed: {str(e)}")
         raise

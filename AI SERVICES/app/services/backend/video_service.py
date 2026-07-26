@@ -61,6 +61,7 @@ class VideoService:
         exam_id: str,
         invigilator_id: str,
         access_token: str,
+        event_emitter: Optional["EventEmitter"] = None,
     ) -> dict:
         """
         Process a video file for cheating detection.
@@ -71,6 +72,7 @@ class VideoService:
             exam_id: Exam ID
             invigilator_id: Invigilator user ID
             access_token: JWT access token for authentication
+            event_emitter: Optional event emitter for real-time updates
 
         Returns:
             dict: VideoAnalysis record with Cloudinary URLs
@@ -81,28 +83,46 @@ class VideoService:
         """
         # Validate video
         video_bytes = await self._validate_video(video_file)
+        if event_emitter:
+            await event_emitter.emit_info("Video validated successfully")
 
         # Save temporarily
         temp_path = await self._save_temp_video(video_bytes, video_file.filename)
+        if event_emitter:
+            await event_emitter.emit_info("Temporary file created")
 
         try:
             # Process through AI pipeline
-            processed_path = await self._process_with_ai_pipeline(temp_path)
+            if event_emitter:
+                await event_emitter.emit_stage_started("AI Pipeline")
+            processed_path = await self._process_with_ai_pipeline(temp_path, event_emitter)
+            if event_emitter:
+                await event_emitter.emit_stage_completed("AI Pipeline")
 
             # Upload to Cloudinary
+            if event_emitter:
+                await event_emitter.emit_info("Uploading original video to Cloudinary")
             original_url = await self._upload_to_cloudinary(
                 temp_path,
                 folder="videos/original",
                 public_id=f"session_{session_id}_original",
             )
+            if event_emitter:
+                await event_emitter.emit_info("Original video uploaded")
 
+            if event_emitter:
+                await event_emitter.emit_info("Uploading processed video to Cloudinary")
             processed_url = await self._upload_to_cloudinary(
                 processed_path,
                 folder="videos/processed",
                 public_id=f"session_{session_id}_processed",
             )
+            if event_emitter:
+                await event_emitter.emit_info("Processed video uploaded")
 
             # Create VideoAnalysis record via Express backend
+            if event_emitter:
+                await event_emitter.emit_info("Creating VideoAnalysis record")
             video_analysis = await self._create_video_analysis(
                 session_id=session_id,
                 exam_id=exam_id,
@@ -189,7 +209,11 @@ class VideoService:
         logger.info("Saved temporary video to: %s", temp_path)
         return temp_path
 
-    async def _process_with_ai_pipeline(self, video_path: Path) -> Path:
+    async def _process_with_ai_pipeline(
+        self,
+        video_path: Path,
+        event_emitter: Optional["EventEmitter"] = None,
+    ) -> Path:
         """
         Process video through the AI cheating detection pipeline.
 
@@ -202,11 +226,14 @@ class VideoService:
 
         Args:
             video_path: Path to input video
+            event_emitter: Optional event emitter for real-time updates
 
         Returns:
             Path to processed (annotated) video
         """
         logger.info("Processing video through AI pipeline: %s", video_path)
+        if event_emitter:
+            await event_emitter.emit_info("Processing video through AI pipeline")
 
         # Placeholder: In real implementation, this would call the AI service
         # For now, we'll just copy the file to simulate processing
@@ -219,6 +246,8 @@ class VideoService:
         )
 
         logger.info("AI pipeline completed. Output: %s", output_path)
+        if event_emitter:
+            await event_emitter.emit_info("AI pipeline completed")
         return output_path
 
     def _copy_file(self, src: Path, dst: Path) -> None:

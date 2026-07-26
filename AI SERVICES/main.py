@@ -39,6 +39,7 @@ from app.config.database import close_mongo_connection, connect_to_mongo
 from app.config.settings import settings
 from app.core.exceptions import register_exception_handlers
 from app.middleware.logging import RequestLoggingMiddleware
+from app.services.ai.monitoring.socket_manager import socket_manager
 from app.services.backend.embedding_service import embedding_service
 from app.services.backend.video_client import video_analysis_client
 
@@ -198,6 +199,10 @@ def create_app() -> FastAPI:
     application.include_router(health.router, prefix="/api/v1")
     application.include_router(student.router, prefix="/api/v1")
     application.include_router(video.router, prefix="/api/v1")
+
+    # ── Socket.IO integration ─────────────────────────────────────────────────
+    # Mount Socket.IO ASGI app to FastAPI
+    application.mount("/socket.io", socket_manager.app)
 
     logger.debug(
         "Registered routes: %s",

@@ -153,6 +153,51 @@ class ServiceException(AppException):
         super().__init__(message, status.HTTP_500_INTERNAL_SERVER_ERROR, errors)
 
 
+class PipelineException(AppException):
+    """
+    500 Internal Server Error (pipeline execution failure).
+
+    Raised when the AI pipeline encounters an error during execution.
+    """
+
+    def __init__(
+        self,
+        message: str = "Pipeline execution failed.",
+        errors: list[str] | None = None,
+    ) -> None:
+        super().__init__(message, status.HTTP_500_INTERNAL_SERVER_ERROR, errors)
+
+
+class InvalidPipelineException(AppException):
+    """
+    400 Bad Request (invalid pipeline configuration).
+
+    Raised when the pipeline configuration is invalid.
+    """
+
+    def __init__(
+        self,
+        message: str = "Invalid pipeline configuration.",
+        errors: list[str] | None = None,
+    ) -> None:
+        super().__init__(message, status.HTTP_400_BAD_REQUEST, errors)
+
+
+class InvalidStageException(AppException):
+    """
+    400 Bad Request (invalid pipeline stage).
+
+    Raised when a pipeline stage is invalid or not properly configured.
+    """
+
+    def __init__(
+        self,
+        message: str = "Invalid pipeline stage.",
+        errors: list[str] | None = None,
+    ) -> None:
+        super().__init__(message, status.HTTP_400_BAD_REQUEST, errors)
+
+
 # =============================================================================
 # Error response builder
 # =============================================================================

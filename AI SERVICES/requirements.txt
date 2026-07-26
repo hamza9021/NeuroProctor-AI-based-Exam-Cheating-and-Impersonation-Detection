@@ -40,3 +40,7 @@ python-dotenv>=1.0.0             # Load .env files
 
 # ── HTTP Client ────────────────────────────────────────────────────────────────
 httpx>=0.27.0                    # Async HTTP client for Express backend communication
+
+# ── Real-Time Communication ───────────────────────────────────────────────────────
+python-socketio[asyncio]>=5.11.0  # Socket.IO for real-time event broadcasting
+aiohttp>=3.9.0                    # Async HTTP client (required by python-socketio)

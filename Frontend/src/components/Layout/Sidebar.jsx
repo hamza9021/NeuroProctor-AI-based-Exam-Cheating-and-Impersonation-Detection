@@ -26,7 +26,7 @@ const Sidebar = () => {
     { name: 'Admin Management', href: '/admin', icon: Shield, adminOnly: true },
     { name: 'Students', href: '/students', icon: Users },
     { name: 'Exams', href: '/exams', icon: FileText },
-    { name: 'Exam Sessions', href: '/examSessions', icon: Video, adminOnly: true },
+    { name: 'Exam Sessions', href: user?.role === 'admin' ? '/examSessions' : '/invigilator/sessions', icon: Video },
     { name: 'Settings', href: '/settings', icon: Settings },
   ].filter(item => {
     // Hide Students and Exams for invigilator

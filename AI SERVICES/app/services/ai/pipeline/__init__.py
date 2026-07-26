@@ -12,24 +12,22 @@ Components:
     - PipelineStage: Interface for all processing stages
     - BasePipeline: Abstract base class for pipeline implementations
     - OfflinePipeline: Pipeline for pre-recorded video processing
-    - LivePipeline: Pipeline for real-time video processing
     - PipelineManager: Stage registration and execution management
     - PipelineFactory: Factory for creating pipeline instances
 """
 
-from app.services.ai.pipeline.base_pipeline import BasePipeline, PipelineStage
-from app.services.ai.pipeline.frame_context import FrameContext
-from app.services.ai.pipeline.live_pipeline import LivePipeline
-from app.services.ai.pipeline.offline_pipeline import OfflinePipeline
-from app.services.ai.pipeline.pipeline_factory import PipelineFactory
-from app.services.ai.pipeline.pipeline_manager import PipelineManager
+from app.services.ai.pipeline.base import BasePipeline
+from app.services.ai.pipeline.context import FrameContext
+from app.services.ai.pipeline.factory import PipelineFactory
+from app.services.ai.pipeline.interfaces import PipelineStage
+from app.services.ai.pipeline.manager import PipelineManager
+from app.services.ai.pipeline.offline import OfflinePipeline
 
 __all__ = [
     "FrameContext",
     "PipelineStage",
     "BasePipeline",
     "OfflinePipeline",
-    "LivePipeline",
     "PipelineManager",
     "PipelineFactory",
 ]

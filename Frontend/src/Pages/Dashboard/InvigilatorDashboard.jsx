@@ -10,12 +10,20 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import VideoUpload from "../../components/VideoUpload/VideoUpload.jsx";
 import VideoAnalysisCard from "../../components/VideoUpload/VideoAnalysisCard.jsx";
-import { useState } from "react";
+import LiveLogViewer from "../../components/VideoUpload/LiveLogViewer.jsx";
+import ProgressPanel from "../../components/VideoUpload/ProgressPanel.jsx";
+import { useState, useEffect } from "react";
+import { initializeSocket } from "../../utils/socket";
 
 const InvigilatorDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedSession, setSelectedSession] = useState(null);
+
+  // Initialize Socket.IO connection
+  useEffect(() => {
+    initializeSocket();
+  }, []);
 
   const { data: sessionsData, isLoading: sessionsLoading } = useQuery({
     queryKey: ["invigilator-sessions", user?._id],
@@ -150,6 +158,11 @@ const InvigilatorDashboard = () => {
                 examId={selectedSession.examId?._id || selectedSession.examId}
                 onSuccess={handleVideoUploadSuccess}
               />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <ProgressPanel sessionId={selectedSession._id} />
+                <LiveLogViewer sessionId={selectedSession._id} />
+              </div>
 
               {videoAnalysisData?.data && !videoAnalysisLoading && (
                 <div className="pt-4 border-t border-neutral-200">

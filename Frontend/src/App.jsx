@@ -14,6 +14,7 @@ import AdminExamDetail from "./components/Admin/AdminExamDetail";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import InvigilatorProtectedRoute from "./components/InvigilatorProtectedRoute";
+import InvigilatorSessions from "./Pages/Dashboard/InvigilatorSessions";
 
 
 const App = () => {
@@ -44,6 +45,14 @@ const App = () => {
                         <Route
                             path="/invigilator/dashboard"
                             element={<InvigilatorDashboard />}
+                        />
+                        <Route
+                            path="/invigilator/sessions"
+                            element={<InvigilatorSessions />}
+                        />
+                        <Route
+                            path="/invigilator/sessions/:sessionId"
+                            element={<InvigilatorSessions />}
                         />
                     </Route>
 
