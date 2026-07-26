@@ -234,13 +234,13 @@ class VideoService:
         if event_emitter:
             await event_emitter.emit_info("Processing video through AI pipeline")
 
-        # Initialize YOLO configuration
+        # Initialize YOLO configuration from environment variables
         yolo_config = YOLOConfig(
-            model_path="yolov8m.pt",  # Will be downloaded by ultralytics
-            confidence=0.25,
-            iou=0.45,
-            image_size=640,
-            device="auto",
+            model_path=settings.YOLO_MODEL,
+            confidence=settings.YOLO_CONFIDENCE,
+            iou=settings.YOLO_IOU,
+            image_size=settings.YOLO_IMAGE_SIZE,
+            device=settings.YOLO_DEVICE,
         )
 
         # Initialize pipeline logger

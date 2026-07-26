@@ -62,6 +62,20 @@ class Settings(BaseSettings):
     # Detection input size in pixels (square). 640 is the recommended default.
     INSIGHTFACE_DET_SIZE: int = 640
 
+    # ── YOLO Object Detection ───────────────────────────────────────────────────
+    # YOLO model to use (will be downloaded by ultralytics if not found)
+    YOLO_MODEL: str = "yolo26m.pt"
+    # Device for inference: "auto", "cuda", "cpu", or specific GPU index like "cuda:0"
+    YOLO_DEVICE: str = "auto"
+    # Confidence threshold for detections (0.0 to 1.0)
+    YOLO_CONFIDENCE: float = 0.25
+    # IOU threshold for NMS (0.0 to 1.0)
+    YOLO_IOU: float = 0.45
+    # Image size for inference (square, in pixels)
+    YOLO_IMAGE_SIZE: int = 640
+    # Enable verbose logging from ultralytics
+    YOLO_VERBOSE: bool = False
+
     # ── Image Validation ──────────────────────────────────────────────────────
     MAX_IMAGE_SIZE_MB: int = 5
     EMBEDDING_DIMENSION: int = 512

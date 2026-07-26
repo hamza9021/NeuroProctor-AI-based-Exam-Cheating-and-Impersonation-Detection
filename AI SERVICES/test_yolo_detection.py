@@ -3,6 +3,7 @@
 import numpy as np
 from datetime import datetime
 
+from app.config.settings import settings
 from app.services.ai.detectors.yolo.config import YOLOConfig
 from app.services.ai.detectors.yolo.stage import YOLODetectionStage
 from app.services.ai.pipeline.context import FrameContext
@@ -12,13 +13,13 @@ from app.services.ai.monitoring import PipelineLogger
 def test_yolo_detection():
     """Test YOLO detection stage integration."""
     
-    # Create configuration
+    # Create configuration from environment variables
     config = YOLOConfig(
-        model_path="yolov8m.pt",  # Will be downloaded by ultralytics
-        confidence=0.25,
-        iou=0.45,
-        image_size=640,
-        device="auto",
+        model_path=settings.YOLO_MODEL,
+        confidence=settings.YOLO_CONFIDENCE,
+        iou=settings.YOLO_IOU,
+        image_size=settings.YOLO_IMAGE_SIZE,
+        device=settings.YOLO_DEVICE,
     )
     
     # Create pipeline logger (for testing, use minimal logger)
