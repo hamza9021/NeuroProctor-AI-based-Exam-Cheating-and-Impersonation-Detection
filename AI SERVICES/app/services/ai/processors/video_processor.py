@@ -1,4 +1,4 @@
-"""Video processor with YOLO detection."""
+"""Video processor with YOLO detection and DeepSORT tracking."""
 
 import cv2
 import logging
@@ -10,28 +10,38 @@ from app.services.ai.detectors.yolo.config import YOLOConfig
 from app.services.ai.detectors.yolo.stage import YOLODetectionStage
 from app.services.ai.pipeline.context import FrameContext
 from app.services.ai.processors.frame_extractor import FrameExtractor
+from app.services.ai.trackers.deepsort.config import DeepSORTConfig
+from app.services.ai.trackers.deepsort.stage import DeepSORTStage
 from app.services.ai.monitoring import PipelineLogger, EventEmitter
 
 logger = logging.getLogger(__name__)
 
 
 class VideoProcessor:
-    """Processes video through YOLO detection pipeline."""
+    """Processes video through YOLO detection and DeepSORT tracking pipeline."""
     
-    def __init__(self, yolo_config: YOLOConfig, pipeline_logger: PipelineLogger):
+    def __init__(
+        self,
+        yolo_config: YOLOConfig,
+        deepsort_config: DeepSORTConfig,
+        pipeline_logger: PipelineLogger,
+    ):
         """Initialize video processor.
         
         Args:
             yolo_config: YOLO configuration.
+            deepsort_config: DeepSORT configuration.
             pipeline_logger: Pipeline logger for Socket.IO events.
         """
         self._yolo_config = yolo_config
+        self._deepsort_config = deepsort_config
         self._pipeline_logger = pipeline_logger
         self._event_emitter = EventEmitter(pipeline_logger)
         self._yolo_stage: Optional[YOLODetectionStage] = None
+        self._deepsort_stage: Optional[DeepSORTStage] = None
     
     async def process_video(self, video_path: Path, output_path: Path) -> dict:
-        """Process video through YOLO detection pipeline.
+        """Process video through YOLO detection and DeepSORT tracking pipeline.
         
         Args:
             video_path: Path to input video.
@@ -42,9 +52,12 @@ class VideoProcessor:
         """
         logger.info(f"Processing video: {video_path}")
         
-        # Initialize YOLO stage
+        # Initialize stages
         if self._yolo_stage is None:
             self._yolo_stage = YOLODetectionStage(self._yolo_config, self._pipeline_logger)
+        
+        if self._deepsort_stage is None:
+            self._deepsort_stage = DeepSORTStage(self._deepsort_config, self._pipeline_logger)
         
         # Extract frames and process
         extractor = FrameExtractor(video_path)
@@ -63,6 +76,7 @@ class VideoProcessor:
         writer = cv2.VideoWriter(str(output_path), fourcc, fps, (width, height))
         
         detection_stats = {}
+        track_stats = {}
         
         for frame_number, frame in extractor.extract_frames():
             # Calculate progress percentage
@@ -75,7 +89,7 @@ class VideoProcessor:
                     "frame_number": frame_number,
                     "total_frames": total_frames,
                     "progress": progress,
-                    "stage": "yolo_detection"
+                    "stage": "video_processing"
                 }
             )
             
@@ -89,70 +103,32 @@ class VideoProcessor:
             # Process through YOLO stage
             context = await self._yolo_stage.process(context)
             
-            # Draw detections on frame
-            annotated_frame = self._draw_detections(frame, context.detections)
+            # Process through DeepSORT stage
+            context = await self._deepsort_stage.process(context)
             
-            # Write to output video
-            writer.write(annotated_frame)
+            # Write annotated frame (DeepSORT annotates in-place)
+            writer.write(context.frame)
             
-            # Collect statistics
+            # Collect detection statistics
             for det in context.detections:
                 class_name = det.class_name
                 detection_stats[class_name] = detection_stats.get(class_name, 0) + 1
+            
+            # Collect track statistics
+            for track in context.tracks:
+                track_id = track.track_id
+                track_stats[track_id] = track_stats.get(track_id, 0) + 1
         
         writer.release()
         extractor.close()
         
         logger.info(f"Video processing complete. Output: {output_path}")
         logger.info(f"Detection statistics: {detection_stats}")
+        logger.info(f"Track statistics: {len(track_stats)} unique tracks")
         
         return {
             "total_frames": total_frames,
             "detections": detection_stats,
+            "tracks": track_stats,
         }
-    
-    def _draw_detections(self, frame, detections) -> any:
-        """Draw detection boxes on frame.
-        
-        Args:
-            frame: Input frame.
-            detections: List of Detection objects.
-            
-        Returns:
-            Annotated frame.
-        """
-        annotated = frame.copy()
-        
-        for det in detections:
-            x1, y1, x2, y2 = [int(coord) for coord in det.bbox]
-            
-            # Draw bounding box
-            color = self._get_class_color(det.class_name)
-            cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
-            
-            # Draw label
-            label = f"{det.class_name} {det.confidence:.2f}"
-            cv2.putText(annotated, label, (x1, y1 - 10),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-        
-        return annotated
-    
-    def _get_class_color(self, class_name: str) -> tuple:
-        """Get color for class name.
-        
-        Args:
-            class_name: Class name.
-            
-        Returns:
-            RGB color tuple.
-        """
-        colors = {
-            "person": (0, 255, 0),
-            "cell phone": (255, 0, 0),
-            "book": (0, 0, 255),
-            "laptop": (255, 255, 0),
-            "tablet": (255, 0, 255),
-            "mouse": (0, 255, 255),
-            "keyboard": (128, 0, 128),
-        }
-        return colors.get(class_name, (255, 255, 255))
+

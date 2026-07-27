@@ -49,3 +49,11 @@ aiohttp>=3.9.0                    # Async HTTP client (required by python-socket
 ultralytics>=8.1.0                # YOLOv8 object detection library
 torch>=2.1.0                      # PyTorch (required by ultralytics)
 torchvision>=0.16.0               # Torch vision utilities (required by ultralytics)
+
+# ── DeepSORT Multi-Object Tracking ─────────────────────────────────────────────────
+# Using custom centroid tracker (no external DeepSORT dependency)
+scikit-learn>=1.3.0               # Required for centroid distance calculations
+scipy>=1.11.0                     # Required for centroid distance calculations
+
+# ── Testing ───────────────────────────────────────────────────────────────────────
+pytest>=8.0.0                     # Unit testing framework

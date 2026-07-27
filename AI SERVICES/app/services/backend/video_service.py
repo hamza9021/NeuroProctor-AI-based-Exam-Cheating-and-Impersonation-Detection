@@ -243,11 +243,17 @@ class VideoService:
             device=settings.YOLO_DEVICE,
         )
 
+        # Initialize DeepSORT configuration
+        from app.services.ai.trackers.deepsort.config import DeepSORTConfig
+        deepsort_config = DeepSORTConfig(
+            device=settings.YOLO_DEVICE,
+        )
+
         # Initialize pipeline logger
         pipeline_logger = PipelineLogger(session_id="video-processing")
 
-        # Create video processor
-        processor = VideoProcessor(yolo_config, pipeline_logger)
+        # Create video processor with both YOLO and DeepSORT configs
+        processor = VideoProcessor(yolo_config, deepsort_config, pipeline_logger)
 
         # Generate output path
         output_path = self._annotated_dir / f"processed_{video_path.name}"
