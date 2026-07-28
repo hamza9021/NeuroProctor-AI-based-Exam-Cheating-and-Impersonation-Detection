@@ -21,21 +21,24 @@ class CentroidTracker:
         """
         self._next_id = 0
         self._objects: Dict[int, np.ndarray] = {}
+        self._bboxes: Dict[int, list] = {}
         self._disappeared: Dict[int, int] = {}
         self._hits: Dict[int, int] = {}
         self._max_disappeared = max_disappeared
         self._min_hits = min_hits
     
-    def register(self, centroid: np.ndarray) -> int:
+    def register(self, centroid: np.ndarray, bbox: list) -> int:
         """Register a new track.
         
         Args:
             centroid: Centroid coordinates [x, y].
+            bbox: Original detection bounding box [x1, y1, x2, y2].
             
         Returns:
             Track ID.
         """
         self._objects[self._next_id] = centroid
+        self._bboxes[self._next_id] = bbox
         self._disappeared[self._next_id] = 0
         self._hits[self._next_id] = 1
         track_id = self._next_id
@@ -49,6 +52,7 @@ class CentroidTracker:
             track_id: Track ID to deregister.
         """
         del self._objects[track_id]
+        del self._bboxes[track_id]
         del self._disappeared[track_id]
         del self._hits[track_id]
     
@@ -76,8 +80,8 @@ class CentroidTracker:
         
         # If no existing tracks, register all
         if len(self._objects) == 0:
-            for centroid in input_centroids:
-                self.register(centroid)
+            for i, centroid in enumerate(input_centroids):
+                self.register(centroid, list(detections[i]))
         else:
             # Match detections to existing tracks
             object_centroids = list(self._objects.values())
@@ -97,9 +101,10 @@ class CentroidTracker:
                 if row in used_row_indices or col in used_col_indices:
                     continue
                 
-                # Update track centroid
+                # Update track centroid and bbox
                 track_id = object_ids[row]
                 self._objects[track_id] = input_centroids[col]
+                self._bboxes[track_id] = list(detections[col])
                 self._disappeared[track_id] = 0
                 self._hits[track_id] += 1
                 
@@ -110,18 +115,14 @@ class CentroidTracker:
             unused_col_indices = set(range(0, D.shape[1])).difference(used_col_indices)
             if D.shape[0] < D.shape[1]:
                 for col in unused_col_indices:
-                    self.register(input_centroids[col])
+                    self.register(input_centroids[col], list(detections[col]))
         
         # Build track list
         tracks = []
         for track_id, centroid in self._objects.items():
-            # Get bbox from centroid (approximate)
-            x, y = centroid
-            bbox = [x - 25, y - 50, x + 25, y + 50]  # Default 50x100 bbox
-            
             tracks.append({
                 'track_id': track_id,
-                'bbox': bbox,
+                'bbox': self._bboxes[track_id],
                 'centroid': centroid,
                 'is_confirmed': self._hits[track_id] >= self._min_hits,
                 'age': self._hits[track_id],
