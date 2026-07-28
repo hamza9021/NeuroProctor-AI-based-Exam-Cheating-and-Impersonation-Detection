@@ -8,6 +8,9 @@ from typing import Optional
 
 from app.services.ai.detectors.yolo.config import YOLOConfig
 from app.services.ai.detectors.yolo.stage import YOLODetectionStage
+from app.services.ai.detectors.phone.config import PhoneDetectionConfig
+from app.services.ai.detectors.phone.service import PhoneDetectionService
+from app.services.ai.detectors.phone.temporal_tracker import PhoneState
 from app.services.ai.pipeline.context import FrameContext
 from app.services.ai.processors.frame_extractor import FrameExtractor
 from app.services.ai.trackers.deepsort.config import DeepSORTConfig
@@ -27,6 +30,7 @@ class VideoProcessor:
         yolo_config: YOLOConfig,
         deepsort_config: DeepSORTConfig,
         pose_config: YoloPoseConfig,
+        phone_config: PhoneDetectionConfig,
         pipeline_logger: PipelineLogger,
     ):
         """Initialize video processor.
@@ -35,16 +39,19 @@ class VideoProcessor:
             yolo_config: YOLO configuration.
             deepsort_config: DeepSORT configuration.
             pose_config: Pose configuration.
+            phone_config: Phone detection configuration.
             pipeline_logger: Pipeline logger for Socket.IO events.
         """
         self._yolo_config = yolo_config
         self._deepsort_config = deepsort_config
         self._pose_config = pose_config
+        self._phone_config = phone_config
         self._pipeline_logger = pipeline_logger
         self._event_emitter = EventEmitter(pipeline_logger)
         self._yolo_stage: Optional[YOLODetectionStage] = None
         self._deepsort_stage: Optional[DeepSORTStage] = None
         self._pose_stage: Optional[YoloPoseStage] = None
+        self._phone_service: Optional[PhoneDetectionService] = None
     
     async def process_video(self, video_path: Path, output_path: Path) -> dict:
         """Process video through YOLO detection and DeepSORT tracking pipeline.
@@ -67,6 +74,10 @@ class VideoProcessor:
         
         if self._pose_stage is None:
             self._pose_stage = YoloPoseStage(self._pose_config, self._pipeline_logger)
+        
+        if self._phone_service is None:
+            self._phone_service = PhoneDetectionService(self._phone_config, self._yolo_config)
+            self._phone_service.initialize()
         
         # Extract frames and process
         extractor = FrameExtractor(video_path)
@@ -118,8 +129,17 @@ class VideoProcessor:
             # Process through DeepSORT stage
             context = await self._deepsort_stage.process(context)
             
+            # Detect phones with temporal tracking
+            phone_tracks = []
+            if self._phone_service is not None:
+                phone_tracks = self._phone_service.detect_phones(context, context.tracks)
+            
             # Process through Pose stage
             context = await self._pose_stage.process(context)
+            
+            # Draw phone detections with debug mode
+            debug_mode = self._phone_config.debug_enabled if self._phone_config else False
+            context.frame = self._draw_phone_detections(context.frame, phone_tracks, debug_mode)
             
             # Write annotated frame (DeepSORT annotates in-place)
             writer.write(context.frame)
@@ -146,6 +166,55 @@ class VideoProcessor:
             "detections": detection_stats,
             "tracks": track_stats,
         }
+    
+    def _draw_phone_detections(self, frame, phone_tracks, debug_mode=False):
+        """Draw bounding boxes for confirmed phone detections.
+        
+        Args:
+            frame: Input frame.
+            phone_tracks: List of PhoneTrack objects.
+            debug_mode: If True, draw candidate phones with different styling.
+            
+        Returns:
+            Annotated frame with phone detection boxes.
+        """
+        annotated = frame.copy()
+        
+        for track in phone_tracks:
+            x1, y1, x2, y2 = [int(coord) for coord in track.bounding_box]
+            
+            # Color based on state
+            if track.state == PhoneState.CANDIDATE:
+                color = (0, 165, 255)  # Orange for candidates
+                line_thickness = 1
+            elif track.state == PhoneState.CONFIRMED:
+                color = (0, 255, 255)  # Yellow for confirmed
+                line_thickness = 2
+            else:
+                color = (128, 128, 128)  # Gray for other states
+                line_thickness = 1
+            
+            # Draw bounding box
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), color, line_thickness)
+            
+            # Draw label with state and student association
+            state_label = track.state.value if hasattr(track.state, 'value') else str(track.state)
+            student_id = track.student_track_id if track.student_track_id else "Unknown"
+            
+            if debug_mode:
+                label = f"Phone {state_label} | {track.confidence:.2f} | Student {student_id}"
+            else:
+                label = f"Cell Phone {track.confidence:.2f} | Student {student_id}"
+            
+            self._draw_label(annotated, label, (x1, y1), color)
+            
+            # Draw debug line to person centre if debug mode and student associated
+            if debug_mode and track.student_track_id is not None and hasattr(track, 'association_method'):
+                # Draw line from phone centre to show association
+                phone_center = ((x1 + x2) // 2, (y1 + y2) // 2)
+                cv2.circle(annotated, phone_center, 3, color, -1)
+        
+        return annotated
     
     def _draw_non_person_detections(self, frame, detections):
         """Draw bounding boxes for non-person YOLO detections.

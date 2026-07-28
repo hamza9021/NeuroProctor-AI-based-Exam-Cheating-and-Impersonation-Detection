@@ -64,7 +64,7 @@ class Settings(BaseSettings):
 
     # ── YOLO Object Detection ───────────────────────────────────────────────────
     # YOLO model to use (will be downloaded by ultralytics if not found)
-    YOLO_MODEL: str = "yolo26m.pt"
+    YOLO_MODEL: str = "yolov8m.pt"
     # Device for inference: "auto", "cuda", "cpu", or specific GPU index like "cuda:0"
     YOLO_DEVICE: str = "auto"
     # Confidence threshold for detections (0.0 to 1.0)
@@ -75,6 +75,58 @@ class Settings(BaseSettings):
     YOLO_IMAGE_SIZE: int = 640
     # Enable verbose logging from ultralytics
     YOLO_VERBOSE: bool = False
+
+    # ── Phone Detection ─────────────────────────────────────────────────────────
+    # Phone detection enabled
+    PHONE_DETECTION_ENABLED: bool = True
+    # Dedicated phone model path (empty to use main YOLO model)
+    PHONE_MODEL_PATH: str = ""
+    # Phone class name to detect
+    PHONE_CLASS_NAME: str = "cell phone"
+    # Phone-specific confidence threshold
+    PHONE_CONFIDENCE: float = 0.10
+    # Phone inference image size
+    PHONE_IMAGE_SIZE: int = 960
+    # Fallback image sizes for GPU memory constraints (comma-separated)
+    PHONE_FALLBACK_IMAGE_SIZES: str = "768,640"
+    # Minimum phone bounding box area
+    PHONE_MIN_BOX_AREA: int = 10
+    # Enable student ROI phone detection
+    PHONE_ROI_ENABLED: bool = True
+    # ROI expansion factor (0.15 = 15% expansion)
+    PHONE_ROI_EXPANSION: float = 0.15
+    # Frames to confirm a phone detection
+    PHONE_TEMPORAL_CONFIRM_FRAMES: int = 3
+    # Max missed frames before expiration
+    PHONE_TEMPORAL_MAX_MISSED_FRAMES: int = 2
+    # IoU threshold for student-phone association
+    PHONE_ASSOCIATION_IOU: float = 0.10
+    # IoU threshold for phone deduplication
+    PHONE_DEDUPLICATION_IOU: float = 0.50
+    # Debug mode for phone detection
+    PHONE_DEBUG_ENABLED: bool = False
+    # Max debug frames to save
+    PHONE_DEBUG_MAX_FRAMES: int = 20
+    # Raw diagnostic mode confidence threshold
+    PHONE_RAW_DEBUG_CONFIDENCE: float = 0.01
+    # Raw diagnostic mode image size
+    PHONE_RAW_DEBUG_IMAGE_SIZE: int = 1280
+    # Test configuration: max frames to process (0 = unlimited)
+    PHONE_TEST_MAX_FRAMES: int = 0
+    # Test configuration: start frame
+    PHONE_TEST_START_FRAME: int = 0
+    # Test configuration: end frame (0 = end of video)
+    PHONE_TEST_END_FRAME: int = 0
+    # Test configuration: frame step
+    PHONE_TEST_FRAME_STEP: int = 1
+    # Association configuration: frames to confirm student switch
+    PHONE_ASSOCIATION_SWITCH_CONFIRM_FRAMES: int = 3
+    # Association configuration: score margin to switch students
+    PHONE_ASSOCIATION_SWITCH_MARGIN: float = 0.20
+    # Association configuration: maximum centre distance for association
+    PHONE_MAX_CENTRE_DISTANCE: float = 100.0
+    # Association configuration: minimum association score
+    PHONE_MIN_ASSOCIATION_SCORE: float = 0.3
 
     # ── Image Validation ──────────────────────────────────────────────────────
     MAX_IMAGE_SIZE_MB: int = 5

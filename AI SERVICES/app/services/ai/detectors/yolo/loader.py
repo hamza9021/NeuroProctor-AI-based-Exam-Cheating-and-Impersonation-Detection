@@ -10,6 +10,7 @@ from app.services.ai.detectors.yolo.exceptions import (
     ModelNotFoundError,
     DeviceError,
 )
+from app.services.ai.common.device_resolver import resolve_device
 
 logger = logging.getLogger(__name__)
 
@@ -38,14 +39,14 @@ class ModelLoader:
             DeviceError: If device unavailable.
         """
         try:
-            device = self._get_device()
+            device = resolve_device(self._config.device)
             logger.info(f"Loading YOLO model on device: {device}")
             
             self._model = YOLO(self._config.model_path)
             self._model.to(device)
             
             # Warm up model
-            self._warm_up()
+            self._warm_up(device)
             
             logger.info("YOLO model loaded successfully")
             return self._model
@@ -55,24 +56,13 @@ class ModelLoader:
         except Exception as e:
             raise ModelLoadError(f"Failed to load model: {e}") from e
     
-    def _get_device(self) -> str:
-        """Determine device to use.
+    def _warm_up(self, device: str):
+        """Warm up model with dummy inference.
         
-        Returns:
-            Device string ('cuda' or 'cpu').
-            
-        Raises:
-            DeviceError: If device unavailable.
+        Args:
+            device: Device to run warm-up on.
         """
-        if self._config.device == "auto":
-            return "cuda" if torch.cuda.is_available() else "cpu"
-        
-        if self._config.device == "cuda" and not torch.cuda.is_available():
-            raise DeviceError("CUDA requested but not available")
-        
-        return self._config.device
-    
-    def _warm_up(self):
-        """Warm up model with dummy inference."""
         dummy_input = torch.zeros(1, 3, 640, 640)
+        if device.startswith("cuda"):
+            dummy_input = dummy_input.cuda()
         self._model(dummy_input)

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 class YoloPoseConfig:
     """Configuration for YOLO26 pose estimation."""
 
-    model_path: str = "yolo26m-pose.pt"
+    model_path: str = "yolov8m-pose.pt" #yolo26m-pose.pt
     """Official Ultralytics YOLO26 medium pose model."""
 
     device: str = "cuda:0"

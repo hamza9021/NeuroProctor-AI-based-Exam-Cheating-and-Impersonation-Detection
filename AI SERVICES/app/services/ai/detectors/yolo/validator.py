@@ -4,21 +4,24 @@ import logging
 
 from app.services.ai.detectors.yolo.constants import MIN_BBOX_AREA, MAX_BBOX_AREA
 from app.services.ai.detectors.yolo.mapper import ClassMapper
+from app.services.ai.detectors.yolo.config import YOLOConfig
 from app.services.ai.pipeline.context import Detection
 
 logger = logging.getLogger(__name__)
 
 
 class DetectionValidator:
-    """Validates detection results."""
+    """Validates detection results with class-specific confidence thresholds."""
     
-    def __init__(self, mapper: ClassMapper):
-        """Initialize validator with class mapper.
+    def __init__(self, mapper: ClassMapper, config: YOLOConfig):
+        """Initialize validator with class mapper and config.
         
         Args:
             mapper: Class ID to name mapper.
+            config: YOLO configuration with class-specific thresholds.
         """
         self._mapper = mapper
+        self._config = config
     
     def validate(self, detection: Detection) -> bool:
         """Validate a single detection.
@@ -29,8 +32,9 @@ class DetectionValidator:
         Returns:
             True if detection is valid.
         """
-        # Check confidence threshold
-        if detection.confidence < 0.1:
+        # Check class-specific confidence threshold
+        class_confidence = self._config.get_class_confidence(detection.class_name)
+        if detection.confidence < class_confidence:
             return False
         
         # Check if class is in target classes
@@ -61,9 +65,15 @@ class DetectionValidator:
         if x2 <= x1 or y2 <= y1:
             return False
         
+        # Use class-specific minimum area for phones
+        min_area = MIN_BBOX_AREA
+        if detection.class_name == "cell phone":
+            # Allow smaller boxes for phones
+            min_area = 10
+        
         # Check area is within bounds
         area = detection.width * detection.height
-        if area < MIN_BBOX_AREA or area > MAX_BBOX_AREA:
+        if area < min_area or area > MAX_BBOX_AREA:
             return False
         
         return True

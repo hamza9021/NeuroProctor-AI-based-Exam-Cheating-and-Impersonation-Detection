@@ -255,11 +255,41 @@ class VideoService:
             device=settings.YOLO_DEVICE,
         )
 
+        # Initialize Phone detection configuration
+        from app.services.ai.detectors.phone.config import PhoneDetectionConfig
+        phone_config = PhoneDetectionConfig(
+            enabled=settings.PHONE_DETECTION_ENABLED,
+            model_path=settings.PHONE_MODEL_PATH,
+            class_name=settings.PHONE_CLASS_NAME,
+            confidence=settings.PHONE_CONFIDENCE,
+            image_size=settings.PHONE_IMAGE_SIZE,
+            fallback_image_sizes=[int(x) for x in settings.PHONE_FALLBACK_IMAGE_SIZES.split(",")],
+            min_box_area=settings.PHONE_MIN_BOX_AREA,
+            roi_enabled=settings.PHONE_ROI_ENABLED,
+            roi_expansion=settings.PHONE_ROI_EXPANSION,
+            temporal_confirm_frames=settings.PHONE_TEMPORAL_CONFIRM_FRAMES,
+            temporal_max_missed_frames=settings.PHONE_TEMPORAL_MAX_MISSED_FRAMES,
+            association_iou=settings.PHONE_ASSOCIATION_IOU,
+            deduplication_iou=settings.PHONE_DEDUPLICATION_IOU,
+            debug_enabled=settings.PHONE_DEBUG_ENABLED,
+            debug_max_frames=settings.PHONE_DEBUG_MAX_FRAMES,
+            raw_debug_confidence=settings.PHONE_RAW_DEBUG_CONFIDENCE,
+            raw_debug_image_size=settings.PHONE_RAW_DEBUG_IMAGE_SIZE,
+            test_max_frames=settings.PHONE_TEST_MAX_FRAMES,
+            test_start_frame=settings.PHONE_TEST_START_FRAME,
+            test_end_frame=settings.PHONE_TEST_END_FRAME,
+            test_frame_step=settings.PHONE_TEST_FRAME_STEP,
+            association_switch_confirm_frames=settings.PHONE_ASSOCIATION_SWITCH_CONFIRM_FRAMES,
+            association_switch_margin=settings.PHONE_ASSOCIATION_SWITCH_MARGIN,
+            max_centre_distance=settings.PHONE_MAX_CENTRE_DISTANCE,
+            min_association_score=settings.PHONE_MIN_ASSOCIATION_SCORE,
+        )
+
         # Initialize pipeline logger
         pipeline_logger = PipelineLogger(session_id="video-processing")
 
-        # Create video processor with YOLO, DeepSORT, and Pose configs
-        processor = VideoProcessor(yolo_config, deepsort_config, pose_config, pipeline_logger)
+        # Create video processor with YOLO, DeepSORT, Pose, and Phone configs
+        processor = VideoProcessor(yolo_config, deepsort_config, pose_config, phone_config, pipeline_logger)
 
         # Generate output path
         output_path = self._annotated_dir / f"processed_{video_path.name}"

@@ -19,13 +19,13 @@ class DetectionValidator:
     
     Responsibilities:
     - Read detections from context.detections
-    - Keep only person detections
+    - Keep only person detections for tracking
     - Validate bounding boxes
     - Validate confidence values
     - Reject malformed detections
     - Return validated detections in format required by DeepSORT
     
-    Does not modify non-person detections.
+    Preserves non-person detections (like phones) in the context for later processing.
     """
     
     def validate(

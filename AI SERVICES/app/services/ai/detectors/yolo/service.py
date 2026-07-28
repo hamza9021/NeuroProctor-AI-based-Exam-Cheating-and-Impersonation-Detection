@@ -27,7 +27,7 @@ class YOLODetectionService:
         self._mapper = ClassMapper()
         self._detector = None
         self._parser = ResultParser(self._mapper)
-        self._validator = DetectionValidator(self._mapper)
+        self._validator = DetectionValidator(self._mapper, config)
     
     def initialize(self):
         """Load YOLO model and initialize detector."""
