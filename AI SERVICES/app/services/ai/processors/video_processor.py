@@ -12,6 +12,8 @@ from app.services.ai.pipeline.context import FrameContext
 from app.services.ai.processors.frame_extractor import FrameExtractor
 from app.services.ai.trackers.deepsort.config import DeepSORTConfig
 from app.services.ai.trackers.deepsort.stage import DeepSORTStage
+from app.services.ai.analyzers.pose.config import YoloPoseConfig
+from app.services.ai.analyzers.pose.stage import YoloPoseStage
 from app.services.ai.monitoring import PipelineLogger, EventEmitter
 
 logger = logging.getLogger(__name__)
@@ -24,6 +26,7 @@ class VideoProcessor:
         self,
         yolo_config: YOLOConfig,
         deepsort_config: DeepSORTConfig,
+        pose_config: YoloPoseConfig,
         pipeline_logger: PipelineLogger,
     ):
         """Initialize video processor.
@@ -31,14 +34,17 @@ class VideoProcessor:
         Args:
             yolo_config: YOLO configuration.
             deepsort_config: DeepSORT configuration.
+            pose_config: Pose configuration.
             pipeline_logger: Pipeline logger for Socket.IO events.
         """
         self._yolo_config = yolo_config
         self._deepsort_config = deepsort_config
+        self._pose_config = pose_config
         self._pipeline_logger = pipeline_logger
         self._event_emitter = EventEmitter(pipeline_logger)
         self._yolo_stage: Optional[YOLODetectionStage] = None
         self._deepsort_stage: Optional[DeepSORTStage] = None
+        self._pose_stage: Optional[YoloPoseStage] = None
     
     async def process_video(self, video_path: Path, output_path: Path) -> dict:
         """Process video through YOLO detection and DeepSORT tracking pipeline.
@@ -58,6 +64,9 @@ class VideoProcessor:
         
         if self._deepsort_stage is None:
             self._deepsort_stage = DeepSORTStage(self._deepsort_config, self._pipeline_logger)
+        
+        if self._pose_stage is None:
+            self._pose_stage = YoloPoseStage(self._pose_config, self._pipeline_logger)
         
         # Extract frames and process
         extractor = FrameExtractor(video_path)
@@ -108,6 +117,9 @@ class VideoProcessor:
             
             # Process through DeepSORT stage
             context = await self._deepsort_stage.process(context)
+            
+            # Process through Pose stage
+            context = await self._pose_stage.process(context)
             
             # Write annotated frame (DeepSORT annotates in-place)
             writer.write(context.frame)

@@ -43,6 +43,8 @@ class FrameContext:
         timestamp: Timestamp when the frame was captured.
         metadata: Additional metadata about the frame.
         detections: List of object detections for this frame.
+        tracks: List of tracking results for this frame.
+        poses: Dictionary of pose results keyed by track_id.
     """
     
     frame: Any
@@ -50,3 +52,5 @@ class FrameContext:
     timestamp: datetime
     metadata: Dict[str, Any] = field(default_factory=dict)
     detections: List[Detection] = field(default_factory=list)
+    tracks: List[Any] = field(default_factory=list)
+    poses: Dict[int, Any] = field(default_factory=dict)

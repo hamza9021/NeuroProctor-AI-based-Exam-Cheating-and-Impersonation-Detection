@@ -249,11 +249,17 @@ class VideoService:
             device=settings.YOLO_DEVICE,
         )
 
+        # Initialize Pose configuration
+        from app.services.ai.analyzers.pose.config import YoloPoseConfig
+        pose_config = YoloPoseConfig(
+            device=settings.YOLO_DEVICE,
+        )
+
         # Initialize pipeline logger
         pipeline_logger = PipelineLogger(session_id="video-processing")
 
-        # Create video processor with both YOLO and DeepSORT configs
-        processor = VideoProcessor(yolo_config, deepsort_config, pipeline_logger)
+        # Create video processor with YOLO, DeepSORT, and Pose configs
+        processor = VideoProcessor(yolo_config, deepsort_config, pose_config, pipeline_logger)
 
         # Generate output path
         output_path = self._annotated_dir / f"processed_{video_path.name}"
