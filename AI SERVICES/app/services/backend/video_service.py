@@ -255,6 +255,21 @@ class VideoService:
             device=settings.YOLO_DEVICE,
         )
 
+        # Initialize Head Pose configuration
+        from app.services.ai.analyzers.head_pose.config import HeadPoseConfig
+        head_pose_config = HeadPoseConfig(
+            model_path=settings.HEAD_POSE_MODEL_PATH,
+            device=settings.HEAD_POSE_DEVICE,
+            input_size=settings.HEAD_POSE_INPUT_SIZE,
+            face_padding=settings.HEAD_POSE_FACE_PADDING,
+            min_face_size=settings.HEAD_POSE_MIN_FACE_SIZE,
+            max_abs_angle=settings.HEAD_POSE_MAX_ABS_ANGLE,
+            annotation_enabled=settings.HEAD_POSE_ANNOTATION_ENABLED,
+            draw_axis=settings.HEAD_POSE_DRAW_AXIS,
+            log_level=settings.HEAD_POSE_LOG_LEVEL,
+            frame_log_interval=settings.HEAD_POSE_FRAME_LOG_INTERVAL,
+        )
+
         # Initialize Phone detection configuration
         from app.services.ai.detectors.phone.config import PhoneDetectionConfig
         phone_config = PhoneDetectionConfig(
@@ -288,8 +303,8 @@ class VideoService:
         # Initialize pipeline logger
         pipeline_logger = PipelineLogger(session_id="video-processing")
 
-        # Create video processor with YOLO, DeepSORT, Pose, and Phone configs
-        processor = VideoProcessor(yolo_config, deepsort_config, pose_config, phone_config, pipeline_logger)
+        # Create video processor with YOLO, DeepSORT, Pose, Head Pose, and Phone configs
+        processor = VideoProcessor(yolo_config, deepsort_config, pose_config, phone_config, head_pose_config, pipeline_logger)
 
         # Generate output path
         output_path = self._annotated_dir / f"processed_{video_path.name}"

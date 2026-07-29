@@ -128,6 +128,28 @@ class Settings(BaseSettings):
     # Association configuration: minimum association score
     PHONE_MIN_ASSOCIATION_SCORE: float = 0.3
 
+    # ── Head Pose Estimation ───────────────────────────────────────────────────
+    # Head pose model path
+    HEAD_POSE_MODEL_PATH: str = "models/6DRepNet_300W_LP_AFLW2000.pth"
+    # Head pose device
+    HEAD_POSE_DEVICE: str = "auto"
+    # Head pose input size
+    HEAD_POSE_INPUT_SIZE: int = 224
+    # Face crop padding (0.0 to 1.0)
+    HEAD_POSE_FACE_PADDING: float = 0.20
+    # Minimum face size in pixels
+    HEAD_POSE_MIN_FACE_SIZE: int = 40
+    # Maximum absolute angle in degrees
+    HEAD_POSE_MAX_ABS_ANGLE: float = 90.0
+    # Enable head pose annotation
+    HEAD_POSE_ANNOTATION_ENABLED: bool = True
+    # Draw orientation axis
+    HEAD_POSE_DRAW_AXIS: bool = True
+    # Log level for head pose
+    HEAD_POSE_LOG_LEVEL: str = "detailed"
+    # Frame log interval
+    HEAD_POSE_FRAME_LOG_INTERVAL: int = 10
+
     # ── Image Validation ──────────────────────────────────────────────────────
     MAX_IMAGE_SIZE_MB: int = 5
     EMBEDDING_DIMENSION: int = 512

@@ -17,6 +17,8 @@ from app.services.ai.trackers.deepsort.config import DeepSORTConfig
 from app.services.ai.trackers.deepsort.stage import DeepSORTStage
 from app.services.ai.analyzers.pose.config import YoloPoseConfig
 from app.services.ai.analyzers.pose.stage import YoloPoseStage
+from app.services.ai.analyzers.head_pose.config import HeadPoseConfig
+from app.services.ai.analyzers.head_pose.stage import SixDRepNetHeadPoseStage
 from app.services.ai.monitoring import PipelineLogger, EventEmitter
 
 logger = logging.getLogger(__name__)
@@ -31,6 +33,7 @@ class VideoProcessor:
         deepsort_config: DeepSORTConfig,
         pose_config: YoloPoseConfig,
         phone_config: PhoneDetectionConfig,
+        head_pose_config: HeadPoseConfig,
         pipeline_logger: PipelineLogger,
     ):
         """Initialize video processor.
@@ -40,17 +43,20 @@ class VideoProcessor:
             deepsort_config: DeepSORT configuration.
             pose_config: Pose configuration.
             phone_config: Phone detection configuration.
+            head_pose_config: Head pose configuration.
             pipeline_logger: Pipeline logger for Socket.IO events.
         """
         self._yolo_config = yolo_config
         self._deepsort_config = deepsort_config
         self._pose_config = pose_config
         self._phone_config = phone_config
+        self._head_pose_config = head_pose_config
         self._pipeline_logger = pipeline_logger
         self._event_emitter = EventEmitter(pipeline_logger)
         self._yolo_stage: Optional[YOLODetectionStage] = None
         self._deepsort_stage: Optional[DeepSORTStage] = None
         self._pose_stage: Optional[YoloPoseStage] = None
+        self._head_pose_stage: Optional[SixDRepNetHeadPoseStage] = None
         self._phone_service: Optional[PhoneDetectionService] = None
     
     async def process_video(self, video_path: Path, output_path: Path) -> dict:
@@ -74,6 +80,9 @@ class VideoProcessor:
         
         if self._pose_stage is None:
             self._pose_stage = YoloPoseStage(self._pose_config, self._pipeline_logger)
+        
+        if self._head_pose_stage is None:
+            self._head_pose_stage = SixDRepNetHeadPoseStage(self._head_pose_config, self._pipeline_logger)
         
         if self._phone_service is None:
             self._phone_service = PhoneDetectionService(self._phone_config, self._yolo_config)
@@ -136,6 +145,9 @@ class VideoProcessor:
             
             # Process through Pose stage
             context = await self._pose_stage.process(context)
+            
+            # Process through Head Pose stage
+            context = await self._head_pose_stage.process(context)
             
             # Draw phone detections with debug mode
             debug_mode = self._phone_config.debug_enabled if self._phone_config else False
