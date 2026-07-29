@@ -37,8 +37,11 @@ class ResultMapper:
         """
         # Map results to context
         context = await self._mapper.map(context, results)
-        
-        # Annotate frame
-        context.frame = await self._annotator.annotate(context.frame, results)
-        
+
+        # Annotate frame — pass frame_number for stale-result guard
+        context.frame = await self._annotator.annotate(
+            context.frame, results, current_frame_index=context.frame_number
+        )
+
         return context
+

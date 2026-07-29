@@ -48,8 +48,11 @@ class FaceCropper:
         # Validate and clip bbox
         x1, y1, x2, y2 = self._validate_bbox(face_bbox, frame.shape)
         
-        # Extract crop
-        crop = frame[int(y1) : int(y2), int(x1) : int(x2)]
+        # Extract crop — .copy() ensures the array owns its memory so
+        # modifications to the source frame buffer cannot corrupt the crop
+        # after this point (prevents stale-view bugs in async pipelines).
+        crop = frame[int(y1) : int(y2), int(x1) : int(x2)].copy()
+
         
         # Validate crop
         if crop.size == 0 or crop.shape[0] == 0 or crop.shape[1] == 0:

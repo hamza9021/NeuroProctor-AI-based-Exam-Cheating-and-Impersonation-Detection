@@ -3,7 +3,7 @@
 import asyncio
 import numpy as np
 from datetime import datetime
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import AsyncMock, Mock, patch, MagicMock
 
 import pytest
 
@@ -164,8 +164,8 @@ class TestAnnotationErrorHandling:
         """Test successful tracking preserves context when annotation fails."""
         config = DeepSORTConfig(annotation_required=False)
         mock_logger = Mock(spec=PipelineLogger)
-        mock_logger.info = Mock(return_value=asyncio.coroutine(lambda *args, **kwargs: None)())
-        mock_logger.warning = Mock(return_value=asyncio.coroutine(lambda *args, **kwargs: None)())
+        mock_logger.info = AsyncMock(return_value=None)
+        mock_logger.warning = AsyncMock(return_value=None)
         
         service = DeepSORTService(config, mock_logger)
         service._initialized = True
@@ -192,8 +192,8 @@ class TestAnnotationErrorHandling:
         """Test original frame preserved when annotation fails."""
         config = DeepSORTConfig(annotation_required=False)
         mock_logger = Mock(spec=PipelineLogger)
-        mock_logger.info = Mock(return_value=asyncio.coroutine(lambda *args, **kwargs: None)())
-        mock_logger.warning = Mock(return_value=asyncio.coroutine(lambda *args, **kwargs: None)())
+        mock_logger.info = AsyncMock(return_value=None)
+        mock_logger.warning = AsyncMock(return_value=None)
         
         service = DeepSORTService(config, mock_logger)
         service._initialized = True
@@ -219,8 +219,8 @@ class TestAnnotationErrorHandling:
         """Test FrameContext.tracks preserved when annotation fails."""
         config = DeepSORTConfig(annotation_required=False)
         mock_logger = Mock(spec=PipelineLogger)
-        mock_logger.info = Mock(return_value=asyncio.coroutine(lambda *args, **kwargs: None)())
-        mock_logger.warning = Mock(return_value=asyncio.coroutine(lambda *args, **kwargs: None)())
+        mock_logger.info = AsyncMock(return_value=None)
+        mock_logger.warning = AsyncMock(return_value=None)
         
         service = DeepSORTService(config, mock_logger)
         service._initialized = True

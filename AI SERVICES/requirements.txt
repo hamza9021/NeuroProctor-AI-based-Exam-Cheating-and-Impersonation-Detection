@@ -55,6 +55,15 @@ torchvision>=0.16.0               # Torch vision utilities (required by ultralyt
 scikit-learn>=1.3.0               # Required for centroid distance calculations
 scipy>=1.11.0                     # Required for centroid distance calculations
 
+# ── Head Pose Estimation ─────────────────────────────────────────────────────────────
+# sixdrepnet provides the official SixDRepNet architecture and Euler-angle utilities
+# used by HeadPoseModelLoader (loader.py) and HeadPoseParser (parser.py).
+# Requires Python >=3.10, PyTorch >=2.1 (already listed above).
+# Local checkpoint: models/6drepnet/6DRepNet_300W_LP_AFLW2000.pth
+# Automatic weight downloading is disabled; the .pth file must be present locally.
+sixdrepnet>=0.1.1                 # Official SixDRepNet head-pose estimation package
+
+
 # ── Testing ───────────────────────────────────────────────────────────────────────
 pytest>=8.0.0                     # Unit testing framework
 pytest-asyncio>=0.21.0            # Async support for pytest

@@ -45,9 +45,10 @@ class ServiceInitializer:
         estimator = HeadPoseEstimator(model, self._config, self._logger)
         track_processor = TrackProcessor(
             self._locator, self._cropper, estimator,
-            self._parser, self._validator
+            self._parser, self._validator, self._config,
         )
         return model, estimator, track_processor
+
     
     def get_components(self):
         """Get initialized components.

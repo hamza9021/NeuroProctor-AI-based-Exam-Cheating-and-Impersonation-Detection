@@ -26,6 +26,8 @@ EVENT_FRAME_COMPLETED = "head_pose_frame_completed"
 EVENT_STAGE_COMPLETED = "head_pose_stage_completed"
 EVENT_WARNING = "head_pose_warning"
 EVENT_FAILED = "head_pose_failed"
+EVENT_DATA_PATH_LOGGED = "head_pose_data_path_logged"
+
 
 # Axis names
 AXIS_YAW = "yaw"

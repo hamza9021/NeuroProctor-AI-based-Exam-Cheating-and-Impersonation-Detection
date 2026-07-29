@@ -53,8 +53,9 @@ class FrameContext:
     detections: List[Any] = field(default_factory=list)
     tracks: List[Any] = field(default_factory=list)
     poses: List[Any] = field(default_factory=list)
-    head_pose: Optional[Dict[str, Any]] = None
+    head_pose: Dict[str, Any] = field(default_factory=dict)
     faces: List[Any] = field(default_factory=list)
+
 
     # Analysis results
     events: List[Dict[str, Any]] = field(default_factory=list)
