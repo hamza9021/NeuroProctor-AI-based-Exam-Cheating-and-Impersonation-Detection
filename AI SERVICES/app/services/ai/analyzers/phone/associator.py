@@ -84,8 +84,16 @@ class PhoneStudentAssociator:
         Returns:
             List of phone detections with student_track_id added.
         """
-        # Filter for confirmed person tracks only
-        confirmed_tracks = [t for t in person_tracks if getattr(t, 'is_confirmed', True)]
+        # Filter for confirmed person tracks or tracks with at least 1 hit
+        # This allows association with new tracks before they're fully confirmed
+        eligible_tracks = []
+        for t in person_tracks:
+            is_confirmed = getattr(t, 'is_confirmed', True)
+            hits = getattr(t, 'hits', 0)
+            # Include if confirmed OR has at least 1 hit (real detection)
+            # Handle case where hits might be a Mock object in tests
+            if is_confirmed or (isinstance(hits, int) and hits >= 1):
+                eligible_tracks.append(t)
         
         for phone in phone_detections:
             phone_bbox = phone.get("bbox", [0, 0, 0, 0])
@@ -94,7 +102,7 @@ class PhoneStudentAssociator:
             
             # Calculate association with all person tracks
             results = []
-            for track in confirmed_tracks:
+            for track in eligible_tracks:
                 result = self._calculate_association(
                     phone_bbox,
                     track.bbox,

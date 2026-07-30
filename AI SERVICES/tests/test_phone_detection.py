@@ -603,22 +603,42 @@ class TestPhoneStudentAssociator:
         assert result[0]["student_track_id"] == 1
     
     def test_unconfirmed_tracks_ignored(self):
-        """Test unconfirmed DeepSORT tracks are ignored."""
+        """Test unconfirmed DeepSORT tracks with no hits are ignored."""
         associator = PhoneStudentAssociator()
-        
+
         phone_bbox = [100, 100, 150, 150]
-        
-        # Unconfirmed person track
+
+        # Unconfirmed person track with no hits (truly new track)
         person = Mock()
         person.track_id = 1
         person.bbox = [50, 50, 200, 200]
         person.is_confirmed = False
-        
+        person.hits = 0
+
         phone_detections = [{"bbox": phone_bbox, "confidence": 0.8}]
         result = associator.associate(phone_detections, [person], 1920, 1080)
-        
-        # Should not associate with unconfirmed track
+
+        # Should not associate with unconfirmed track with no hits
         assert result[0]["student_track_id"] is None
+
+    def test_unconfirmed_track_with_hits_associated(self):
+        """Test unconfirmed tracks with at least 1 hit are eligible for association."""
+        associator = PhoneStudentAssociator()
+
+        phone_bbox = [100, 100, 150, 150]
+
+        # Unconfirmed person track with 1 hit (new but has detection)
+        person = Mock()
+        person.track_id = 0
+        person.bbox = [50, 50, 200, 200]
+        person.is_confirmed = False
+        person.hits = 1
+
+        phone_detections = [{"bbox": phone_bbox, "confidence": 0.8}]
+        result = associator.associate(phone_detections, [person], 1920, 1080)
+
+        # Should associate with unconfirmed track that has at least 1 hit
+        assert result[0]["student_track_id"] == 0
     
     def test_iou_calculation(self):
         """Test IoU calculation."""
