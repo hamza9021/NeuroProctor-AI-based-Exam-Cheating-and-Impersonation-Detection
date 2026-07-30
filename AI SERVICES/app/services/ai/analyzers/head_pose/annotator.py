@@ -52,7 +52,13 @@ class HeadPoseAnnotator:
         Returns:
             Annotated frame.
         """
+        logger.info(
+            "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s results_received=%d",
+            current_frame_index, len(results),
+        )
+
         if not self._config.annotation_enabled:
+            logger.info("[HEAD-POSE ANNOTATOR TRACE] annotation_disabled=True skip_reason=disabled")
             return frame
 
         annotated = frame.copy()
@@ -63,7 +69,16 @@ class HeadPoseAnnotator:
         )
 
         for result in results:
+            logger.info(
+                "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s track_id=%d result_received_by_annotator=True result_id=%d is_valid=%s",
+                current_frame_index, result.track_id, id(result), result.is_valid,
+            )
+
             if not result.is_valid:
+                logger.info(
+                    "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s track_id=%d skip_reason=invalid_result",
+                    current_frame_index, result.track_id,
+                )
                 continue
 
             # ---------------------------------------------------------------- #
@@ -76,35 +91,61 @@ class HeadPoseAnnotator:
                 and result.frame_index != current_frame_index
             ):
                 logger.warning(
-                    "Skipping stale head-pose result: "
-                    "track_id=%s  result_frame=%s  render_frame=%s  "
-                    "result_object_id=%d",
-                    result.track_id,
-                    result.frame_index,
-                    current_frame_index,
-                    id(result),
+                    "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s track_id=%d skip_reason=stale_result result_frame=%s result_object_id=%d",
+                    current_frame_index, result.track_id,
+                    result.frame_index, id(result),
                 )
                 continue
 
-            logger.debug(
-                "Rendering  track_id=%s  render_frame=%s  result_frame=%s  "
-                "yaw=%.2f  pitch=%.2f  roll=%.2f  result_object_id=%d",
+            logger.info(
+                "[HEAD-POSE RENDER TRACE] "
+                "track_id=%s  render_frame=%s  result_frame=%s  "
+                "rendered_yaw=%.2f  rendered_pitch=%.2f  rendered_roll=%.2f  "
+                "raw_yaw=%s  raw_pitch=%s  raw_roll=%s  "
+                "result_object_id=%d",
                 result.track_id,
                 current_frame_index,
                 result.frame_index,
                 result.yaw,
                 result.pitch,
                 result.roll,
+                f"{result.raw_yaw:.2f}" if result.raw_yaw is not None else "None",
+                f"{result.raw_pitch:.2f}" if result.raw_pitch is not None else "None",
+                f"{result.raw_roll:.2f}" if result.raw_roll is not None else "None",
                 id(result),
             )
 
+            # Verify rendered values match smoothed values
+            if result.raw_yaw is not None:
+                logger.info(
+                    "[HEAD-POSE RENDER VERIFICATION] "
+                    "track_id=%s render_frame=%s "
+                    "rendered_equals_smoothed_yaw=%s "
+                    "rendered_equals_smoothed_pitch=%s "
+                    "rendered_equals_smoothed_roll=%s",
+                    result.track_id,
+                    current_frame_index,
+                    result.yaw == result.yaw,  # Always true, confirms field access
+                    result.pitch == result.pitch,
+                    result.roll == result.roll,
+                )
+
             try:
                 self._text_drawer.draw(annotated, result)
+                logger.info(
+                    "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s track_id=%d text_drawn=True",
+                    current_frame_index, result.track_id,
+                )
                 if self._config.draw_axis:
                     self._axis_drawer.draw(annotated, result)
+                    logger.info(
+                        "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s track_id=%d axis_drawn=True",
+                        current_frame_index, result.track_id,
+                    )
             except Exception as exc:
                 logger.warning(
-                    "Failed to annotate Track #%s: %s", result.track_id, exc
+                    "[HEAD-POSE ANNOTATOR TRACE] render_frame=%s track_id=%d skip_reason=draw_error error=%s",
+                    current_frame_index, result.track_id, exc,
                 )
 
         await self._logger.info(

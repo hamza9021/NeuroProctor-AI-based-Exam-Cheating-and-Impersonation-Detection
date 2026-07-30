@@ -60,11 +60,11 @@ class FaceLocator:
         )
         
         # Try pose keypoints first
-        if pose_data and "keypoints" in pose_data:
+        if pose_data is not None and "keypoints" in pose_data:
             face_bbox = self._keypoint_locator.locate(
                 pose_data["keypoints"], frame_shape
             )
-            if face_bbox:
+            if face_bbox is not None:
                 await self._logger.info(
                     f"Head region found using pose facial keypoints for Track #{track_id}",
                     emit_event=EVENT_FACE_REGION_FOUND,
@@ -74,7 +74,7 @@ class FaceLocator:
         
         # Fallback to upper portion of track bbox
         face_bbox = self._bbox_locator.locate(track_bbox)
-        if face_bbox:
+        if face_bbox is not None:
             await self._logger.info(
                 f"Head region found using track bbox for Track #{track_id}",
                 emit_event=EVENT_FACE_REGION_FOUND,

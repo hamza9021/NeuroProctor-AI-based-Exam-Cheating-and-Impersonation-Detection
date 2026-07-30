@@ -1,5 +1,6 @@
 """Service initializer for head pose estimation."""
 
+from app.config.settings import settings
 from app.services.ai.analyzers.head_pose.config import HeadPoseConfig
 from app.services.ai.analyzers.head_pose.cropper import FaceCropper
 from app.services.ai.analyzers.head_pose.estimator import HeadPoseEstimator
@@ -8,6 +9,7 @@ from app.services.ai.analyzers.head_pose.loader import HeadPoseModelLoader
 from app.services.ai.analyzers.head_pose.mapper import HeadPoseMapper
 from app.services.ai.analyzers.head_pose.monitor import HeadPoseMonitor
 from app.services.ai.analyzers.head_pose.parser import HeadPoseParser
+from app.services.ai.analyzers.head_pose.temporal_smoother import TemporalSmoother
 from app.services.ai.analyzers.head_pose.track_processor import TrackProcessor
 from app.services.ai.analyzers.head_pose.track_selector import TrackSelector
 from app.services.ai.analyzers.head_pose.validator import HeadPoseValidator
@@ -43,9 +45,19 @@ class ServiceInitializer:
         loader = HeadPoseModelLoader(self._config, self._logger)
         model = await loader.load()
         estimator = HeadPoseEstimator(model, self._config, self._logger)
+        
+        # Initialize temporal smoother with configuration from settings
+        temporal_smoother = TemporalSmoother(
+            alpha=settings.HEAD_POSE_SMOOTHING_ALPHA,
+            max_missing_frames=settings.HEAD_POSE_SMOOTHING_MAX_MISSING_FRAMES,
+            max_single_frame_delta=settings.HEAD_POSE_MAX_SINGLE_FRAME_DELTA,
+            enabled=settings.HEAD_POSE_SMOOTHING_ENABLED,
+        )
+        
         track_processor = TrackProcessor(
             self._locator, self._cropper, estimator,
             self._parser, self._validator, self._config,
+            temporal_smoother=temporal_smoother,
         )
         return model, estimator, track_processor
 

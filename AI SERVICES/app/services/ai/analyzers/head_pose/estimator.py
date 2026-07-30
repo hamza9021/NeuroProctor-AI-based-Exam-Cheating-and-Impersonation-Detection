@@ -90,6 +90,11 @@ class HeadPoseEstimator:
         Raises:
             HeadPoseInferenceError: If preprocessing or the forward pass fail.
         """
+        logger.info(
+            "[HEAD-POSE INFERENCE TRACE] track_id=%d inference_call_count_before=%d",
+            track_id, self._inference_call_count,
+        )
+
         await self._logger.info(
             f"6DRepNet inference started for Track #{track_id}",
             emit_event=EVENT_INFERENCE_STARTED,

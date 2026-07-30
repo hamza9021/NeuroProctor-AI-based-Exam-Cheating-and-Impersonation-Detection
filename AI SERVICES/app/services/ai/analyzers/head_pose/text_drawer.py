@@ -72,14 +72,15 @@ class TextDrawer:
         block_w = max_text_w + _PAD_X * 2
 
         # ------------------------------------------------------------------ #
-        # Choose Y: prefer above person bbox; clamp if near top edge          #
+        # Choose Y: prefer below person bbox to avoid Person label overlap   #
+        # Place above only if near bottom edge                                #
         # ------------------------------------------------------------------ #
-        preferred_top_y = ry1 - total_height - 4
-        if preferred_top_y < 5:
-            # Place below the person-bbox top instead
-            text_top_y = min(ry1 + 4, frame_h - total_height - 5)
+        preferred_bottom_y = ry2 + 4
+        if preferred_bottom_y + total_height > frame_h - 5:
+            # Place above the person-bbox bottom instead
+            text_top_y = max(ry1 - total_height - 4, 5)
         else:
-            text_top_y = preferred_top_y
+            text_top_y = preferred_bottom_y
 
         # Clamp to frame
         text_top_y = max(5, min(text_top_y, frame_h - total_height - 5))

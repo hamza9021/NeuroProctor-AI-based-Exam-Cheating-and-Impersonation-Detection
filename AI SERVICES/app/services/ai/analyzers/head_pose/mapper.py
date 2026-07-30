@@ -40,11 +40,19 @@ class HeadPoseMapper:
         for result in results:
             if result.is_valid:
                 context.head_pose[result.track_id] = result
+                logger.info(
+                    "[HEAD-POSE MAPPER TRACE] frame=%s track_id=%d result_mapped=True result_id=%d",
+                    context.frame_number, result.track_id, id(result),
+                )
                 await self._logger.info(
                     f"Head-pose result stored for Track #{result.track_id}",
                     emit_event=EVENT_RESULT_MAPPED,
                     data={"track_id": result.track_id},
                 )
         
+        logger.info(
+            "[HEAD-POSE MAPPER TRACE] frame=%s total_results_mapped=%d",
+            context.frame_number, len(context.head_pose),
+        )
         logger.debug(f"Mapped {len(results)} head pose results to context")
         return context

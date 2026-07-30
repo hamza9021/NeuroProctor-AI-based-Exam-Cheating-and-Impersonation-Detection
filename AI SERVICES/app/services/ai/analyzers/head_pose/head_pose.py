@@ -13,9 +13,12 @@ class HeadPoseResult:
         track_id: DeepSORT track ID.
         face_bbox: Tight face/head bounding box (x1, y1, x2, y2) in frame
             pixel coordinates.
-        yaw: Yaw angle in degrees (left-right rotation).
-        pitch: Pitch angle in degrees (up-down rotation).
-        roll: Roll angle in degrees (tilt rotation).
+        yaw: Smoothed yaw angle in degrees (left-right rotation).
+        pitch: Smoothed pitch angle in degrees (up-down rotation).
+        roll: Smoothed roll angle in degrees (tilt rotation).
+        raw_yaw: Raw yaw angle in degrees from SixDRepNet (unsmoothed).
+        raw_pitch: Raw pitch angle in degrees from SixDRepNet (unsmoothed).
+        raw_roll: Raw roll angle in degrees from SixDRepNet (unsmoothed).
         confidence: Optional confidence score.
         is_valid: Whether the result passed validation.
         person_bbox: Full DeepSORT person bounding box (x1, y1, x2, y2)
@@ -35,6 +38,9 @@ class HeadPoseResult:
     yaw: float
     pitch: float
     roll: float
+    raw_yaw: Optional[float] = None
+    raw_pitch: Optional[float] = None
+    raw_roll: Optional[float] = None
     confidence: Optional[float] = None
     is_valid: bool = True
     person_bbox: Optional[Tuple[float, float, float, float]] = None
