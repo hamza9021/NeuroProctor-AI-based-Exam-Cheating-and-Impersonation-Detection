@@ -14,6 +14,7 @@ from app.services.ai.analyzers.head_pose.estimator import HeadPoseEstimator
 from app.services.ai.analyzers.head_pose.face_locator import FaceLocator
 from app.services.ai.analyzers.head_pose.head_pose import HeadPoseResult
 from app.services.ai.analyzers.head_pose.parser import HeadPoseParser
+from app.services.ai.analyzers.head_pose.quality_evaluator import HeadPoseQualityEvaluator
 from app.services.ai.analyzers.head_pose.temporal_smoother import TemporalSmoother
 from app.services.ai.analyzers.head_pose.validator import HeadPoseValidator
 from app.services.ai.pipeline.frame_context import FrameContext
@@ -38,6 +39,7 @@ class TrackProcessor:
         validator: HeadPoseValidator,
         config: Optional[HeadPoseConfig] = None,
         temporal_smoother: Optional[TemporalSmoother] = None,
+        quality_evaluator: Optional[HeadPoseQualityEvaluator] = None,
     ):
         """Initialize track processor.
 
@@ -49,6 +51,7 @@ class TrackProcessor:
             validator: Result validator.
             config: Head pose configuration (used to gate diagnostic logging).
             temporal_smoother: Temporal smoother for angle smoothing.
+            quality_evaluator: Quality evaluator for frame reliability assessment.
         """
         self._locator = locator
         self._cropper = cropper
@@ -57,6 +60,7 @@ class TrackProcessor:
         self._validator = validator
         self._config = config
         self._temporal_smoother = temporal_smoother
+        self._quality_evaluator = quality_evaluator
 
     async def process(self, context: FrameContext, track) -> HeadPoseResult:
         """Process a single track.
@@ -239,22 +243,52 @@ class TrackProcessor:
         )
 
         # ------------------------------------------------------------------ #
+        # 5.5. Evaluate frame quality                                         #
+        # ------------------------------------------------------------------ #
+        quality_score = 1.0
+        quality_valid_for_smoothing = True
+        quality_valid_for_rules = True
+        quality_reason = None
+
+        if self._quality_evaluator is not None:
+            quality = self._quality_evaluator.evaluate(
+                visible_facial_keypoints=visible_facial_keypoints,
+                nose_confidence=nose_confidence,
+                crop_shape=face_crop_shape,
+                crop_bbox=face_bbox,
+                rotation_matrix=rotation_matrix,
+            )
+            quality_score = quality.score
+            quality_valid_for_smoothing = quality.is_valid_for_smoothing
+            quality_valid_for_rules = quality.is_valid_for_rules
+            quality_reason = quality.reason
+
+            logger.info(
+                "[HEAD-POSE QUALITY] frame=%d track_id=%d score=%.2f valid_for_smoothing=%s valid_for_rules=%s reason=%s",
+                context.frame_number, track_id, quality_score, quality_valid_for_smoothing, quality_valid_for_rules, quality_reason,
+            )
+
+        # ------------------------------------------------------------------ #
         # 6. Apply temporal smoothing with reliability gate                    #
         # ------------------------------------------------------------------ #
         raw_yaw, raw_pitch, raw_roll = yaw, pitch, roll
-        
+
         # Lightweight reliability check before smoothing
         smoothing_updated = False
         smoothing_skip_reason = None
-        
+
+        # Use quality evaluator result if available
+        if self._quality_evaluator is not None and not quality_valid_for_smoothing:
+            smoothing_skip_reason = f"low_quality({quality_reason})"
+
         # Check for non-finite model output
-        if not (np.isfinite(raw_yaw) and np.isfinite(raw_pitch) and np.isfinite(raw_roll)):
+        if smoothing_skip_reason is None and not (np.isfinite(raw_yaw) and np.isfinite(raw_pitch) and np.isfinite(raw_roll)):
             smoothing_skip_reason = "non_finite_model_output"
         # Check for empty or too small crop
-        elif face_crop_shape[0] < 32 or face_crop_shape[1] < 32:
+        elif smoothing_skip_reason is None and (face_crop_shape[0] < 32 or face_crop_shape[1] < 32):
             smoothing_skip_reason = "crop_too_small"
         # Check for excessively large crop compared to person bbox
-        elif face_bbox:
+        elif smoothing_skip_reason is None and face_bbox:
             person_area = (track.bbox[2] - track.bbox[0]) * (track.bbox[3] - track.bbox[1])
             face_area = (face_bbox[2] - face_bbox[0]) * (face_bbox[3] - face_bbox[1])
             if person_area > 0 and face_area > person_area * 0.5:
@@ -431,6 +465,10 @@ class TrackProcessor:
             axis_origin=axis_origin,
             frame_index=context.frame_number,
             source_timestamp=inference_timestamp,
+            quality_score=quality_score,
+            quality_valid_for_smoothing=quality_valid_for_smoothing,
+            quality_valid_for_rules=quality_valid_for_rules,
+            quality_reason=quality_reason,
         )
 
         logger.info(

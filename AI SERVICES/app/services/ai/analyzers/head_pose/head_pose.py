@@ -31,6 +31,10 @@ class HeadPoseResult:
             that belong to a different frame.  ``None`` means unknown.
         source_timestamp: Wall-clock time (``time.monotonic()``) when
             inference finished.  Used for async out-of-order detection.
+        quality_score: Frame quality score (0.0 to 1.0) from quality evaluator.
+        quality_valid_for_smoothing: Whether frame quality is sufficient for temporal smoothing.
+        quality_valid_for_rules: Whether frame quality is sufficient for cheating rule evaluation.
+        quality_reason: Human-readable reason for quality decision.
     """
 
     track_id: int
@@ -47,4 +51,8 @@ class HeadPoseResult:
     axis_origin: Optional[Tuple[int, int]] = None
     frame_index: Optional[int] = None
     source_timestamp: Optional[float] = None
+    quality_score: float = 1.0
+    quality_valid_for_smoothing: bool = True
+    quality_valid_for_rules: bool = True
+    quality_reason: Optional[str] = None
 
