@@ -131,13 +131,31 @@ class PhoneTemporalTracker:
             student_id = detection.get("student_track_id")
             association_score = detection.get("association_score", 0.0)
             association_method = detection.get("association_method", "unknown")
-            
+
+            # End-to-end trace: PHONE TEMPORAL INPUT
+            logger.info(
+                f"[PHONE TEMPORAL INPUT] frame={frame_number}, "
+                f"phone_bbox={bbox}, "
+                f"incoming_owner_track_id={student_id}, "
+                f"type(incoming_owner_track_id)={type(student_id)}"
+            )
+
             # Find best matching existing track
             best_match_id = self._find_best_match(bbox, student_id)
-            
+
             if best_match_id is not None:
                 # Update existing track
                 track = self._tracks[best_match_id]
+
+                # End-to-end trace: PHONE TEMPORAL STATE (before update)
+                logger.info(
+                    f"[PHONE TEMPORAL STATE] frame={frame_number}, "
+                    f"phone_track_id={best_match_id}, "
+                    f"stored_owner_track_id={track.student_track_id}, "
+                    f"type(stored_owner_track_id)={type(track.student_track_id)}, "
+                    f"missed_frames={track.missed_frames}"
+                )
+
                 track.update(bbox, confidence, frame_number, student_id, association_score, association_method)
                 matched_track_ids.add(best_match_id)
             else:
@@ -155,6 +173,17 @@ class PhoneTemporalTracker:
                     state=PhoneState.CANDIDATE,
                 )
                 self._tracks[self._next_track_id] = new_track
+
+                # End-to-end trace: PHONE TEMPORAL STATE (new track)
+                logger.info(
+                    f"[PHONE TEMPORAL STATE] frame={frame_number}, "
+                    f"phone_track_id={self._next_track_id}, "
+                    f"stored_owner_track_id={new_track.student_track_id}, "
+                    f"type(stored_owner_track_id)={type(new_track.student_track_id)}, "
+                    f"missed_frames={new_track.missed_frames}, "
+                    f"NEW_TRACK=True"
+                )
+
                 self._next_track_id += 1
         
         # Update states

@@ -151,7 +151,12 @@ class VideoProcessor:
             
             # Draw phone detections with debug mode
             debug_mode = self._phone_config.debug_enabled if self._phone_config else False
-            context.frame = self._draw_phone_detections(context.frame, phone_tracks, debug_mode)
+            context.frame = self._draw_phone_detections(
+                frame=context.frame,
+                phone_tracks=phone_tracks,
+                debug_mode=debug_mode,
+                frame_number=context.frame_number,
+            )
             
             # Write annotated frame (DeepSORT annotates in-place)
             writer.write(context.frame)
@@ -179,22 +184,30 @@ class VideoProcessor:
             "tracks": track_stats,
         }
     
-    def _draw_phone_detections(self, frame, phone_tracks, debug_mode=False):
+    def _draw_phone_detections(self, frame, phone_tracks, debug_mode=False, frame_number=None):
         """Draw bounding boxes for confirmed phone detections.
-        
+
         Args:
             frame: Input frame.
             phone_tracks: List of PhoneTrack objects.
             debug_mode: If True, draw candidate phones with different styling.
-            
+            frame_number: Current frame number for logging.
+
         Returns:
             Annotated frame with phone detection boxes.
         """
         annotated = frame.copy()
-        
+
         for track in phone_tracks:
             x1, y1, x2, y2 = [int(coord) for coord in track.bounding_box]
-            
+
+            # End-to-end trace: PHONE ANNOTATOR
+            logger.info(
+                f"[PHONE ANNOTATOR] phone_track_id={track.phone_track_id}, "
+                f"received_owner_track_id={track.student_track_id}, "
+                f"type(received_owner_track_id)={type(track.student_track_id)}"
+            )
+
             # Color based on state
             if track.state == PhoneState.CANDIDATE:
                 color = (0, 165, 255)  # Orange for candidates
@@ -211,13 +224,30 @@ class VideoProcessor:
             
             # Draw label with state and student association
             state_label = track.state.value if hasattr(track.state, 'value') else str(track.state)
-            student_id = track.student_track_id if track.student_track_id else "Unknown"
-            
+            student_id = track.student_track_id if track.student_track_id is not None else "Unknown"
+
             if debug_mode:
                 label = f"Phone {state_label} | {track.confidence:.2f} | Student {student_id}"
             else:
                 label = f"Cell Phone {track.confidence:.2f} | Student {student_id}"
-            
+
+            # Mandatory trace before drawing
+            logger.info(
+                "[PHONE RENDER] frame=%s phone_track_id=%s "
+                "received_owner_track_id=%r owner_type=%s label=%r",
+                frame_number if frame_number is not None else 'unknown',
+                track.phone_track_id,
+                track.student_track_id,
+                type(track.student_track_id),
+                label,
+            )
+
+            # End-to-end trace: PHONE ANNOTATOR (final label)
+            logger.info(
+                f"[PHONE ANNOTATOR] phone_track_id={track.phone_track_id}, "
+                f"final_label='{label}'"
+            )
+
             self._draw_label(annotated, label, (x1, y1), color)
             
             # Draw debug line to person centre if debug mode and student associated

@@ -243,7 +243,16 @@ class PhoneDetectionService:
                 student_tracks,
             )
             logger.debug(f"Frame {context.frame_number}: Confirmed phone tracks: {len(confirmed_tracks)}")
-            
+
+            # End-to-end trace: PHONE RESULT/MAPPER
+            for track in confirmed_tracks:
+                logger.info(
+                    f"[PHONE RESULT/MAPPER] frame={context.frame_number}, "
+                    f"phone_track_id={track.phone_track_id}, "
+                    f"mapped_owner_track_id={track.student_track_id}, "
+                    f"type(mapped_owner_track_id)={type(track.student_track_id)}"
+                )
+
             # Generate phone usage events for confirmed tracks
             events = self._generate_phone_events(confirmed_tracks, context.frame_number, context.timestamp)
             if events:

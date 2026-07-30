@@ -178,6 +178,13 @@ class PhoneStudentAssociator:
                         f"Phone associated with student {phone['student_track_id']}, "
                         f"score={phone['association_score']:.2f}, method={phone['association_method']}"
                     )
+                    # End-to-end trace: PHONE ASSOCIATOR OUTPUT
+                    logger.info(
+                        f"[PHONE ASSOCIATOR OUTPUT] frame={frame_number}, "
+                        f"phone_bbox={phone_bbox}, "
+                        f"owner_track_id={phone['student_track_id']}, "
+                        f"type(owner_track_id)={type(phone['student_track_id'])}"
+                    )
                     
                     # Detailed logging for first association or changes
                     if phone_track_id is not None and frame_number % 10 == 0:  # Rate-limited
