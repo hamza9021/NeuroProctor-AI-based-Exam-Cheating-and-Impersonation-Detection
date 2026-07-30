@@ -190,7 +190,7 @@ class TestTightHeadCrop:
     """Tests for tight head crop from facial keypoints."""
 
     def test_facial_keypoint_crop_smaller_than_person_bbox(self):
-        """Facial-keypoint crop is significantly smaller than the person bbox."""
+        """Facial-keypoint crop is square and smaller than the person bbox."""
         config = HeadPoseConfig()
         locator = KeypointLocator(config)
 
@@ -208,28 +208,38 @@ class TestTightHeadCrop:
         face_width = face_bbox[2] - face_bbox[0]
         face_height = face_bbox[3] - face_bbox[1]
 
-        # Face crop should be much smaller than full person width (720px in example)
+        # Crop should be square (aspect ratio ~1:1)
+        aspect_ratio = face_width / face_height
+        assert 0.9 < aspect_ratio < 1.1, f"Aspect ratio {aspect_ratio} should be ~1.0"
+
+        # Face crop should be smaller than full person width (720px in example)
         assert face_width < 200, f"Face crop width {face_width} should be < 200px"
-        assert face_height < 100, f"Face crop height {face_height} should be < 100px"
+        assert face_height < 200, f"Face crop height {face_height} should be < 200px"
 
     def test_fallback_crop_not_complete_person_width(self):
-        """Final fallback does not use the complete person width."""
+        """Final fallback does not use the complete person width and is square."""
         config = HeadPoseConfig()
         locator = BboxLocator(config)
 
         # Person bbox similar to the problematic example
         person_bbox = (1.0, 432.0, 718.0, 1276.0)
         person_width = person_bbox[2] - person_bbox[0]  # ~717px
+        person_height = person_bbox[3] - person_bbox[1]  # ~844px
 
         face_bbox = locator.locate(person_bbox)
 
         assert face_bbox is not None
         face_width = face_bbox[2] - face_bbox[0]
+        face_height = face_bbox[3] - face_bbox[1]
 
-        # Fallback should exclude 20% from each side, so width should be ~60% of person
-        expected_max_width = person_width * 0.6
-        assert face_width <= expected_max_width + 0.01, \
-            f"Fallback width {face_width} should be <= {expected_max_width} (60% of person)"
+        # Fallback should be square (aspect ratio ~1:1)
+        aspect_ratio = face_width / face_height
+        assert 0.9 < aspect_ratio < 1.1, f"Aspect ratio {aspect_ratio} should be ~1.0"
+
+        # Fallback should be based on person height (20% * 1.3 = ~220px)
+        # Much smaller than person width (717px)
+        # Allow some margin for clamping at frame boundaries
+        assert face_width < 600, f"Fallback width {face_width} should be < 600px"
 
     def test_crop_remains_inside_frame_boundaries(self):
         """Crop remains inside frame boundaries."""

@@ -38,6 +38,10 @@ class HeadPoseConfig:
     log_level: str = "detailed"
     frame_log_interval: int = 10
     debug_log_data_path: bool = False
+    # Square crop parameters for stable head pose estimation
+    minimum_head_size: int = 80
+    head_padding_scale: float = 1.5
+    vertical_center_ratio: float = 0.4
     # ------------------------------------------------------------------ #
     # Diagnostic flags — all default False.                               #
     # Enable selectively to trace freshness bugs; never leave True in     #
