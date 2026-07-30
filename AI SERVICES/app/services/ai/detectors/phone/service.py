@@ -235,12 +235,7 @@ class PhoneDetectionService:
                     debug_tracks.append(debug_track)
                 logger.info(f"RAW DEBUG MODE: Returning {len(debug_tracks)} raw detections")
                 return debug_tracks
-            
-            # Associate with students
-            if student_tracks:
-                phone_detections = self._associate_with_students(phone_detections, student_tracks)
-                logger.debug(f"Frame {context.frame_number}: Associated phone detections: {len(phone_detections)}")
-            
+
             # Update temporal tracking
             confirmed_tracks = self._temporal_tracker.update(
                 phone_detections,
@@ -403,115 +398,76 @@ class PhoneDetectionService:
                 })
         
         return phone_detections
-    
-    def _associate_with_students(
-        self,
-        phone_detections: List[dict],
-        student_tracks: List,
-    ) -> List[dict]:
-        """Associate phone detections with student tracks.
-        
-        Args:
-            phone_detections: List of phone detections.
-            student_tracks: List of student tracks.
-            
-        Returns:
-            List of phone detections with student associations.
-        """
-        for phone_det in phone_detections:
-            phone_bbox = phone_det["bbox"]
-            phone_center = [
-                (phone_bbox[0] + phone_bbox[2]) / 2,
-                (phone_bbox[1] + phone_bbox[3]) / 2,
-            ]
-            
-            best_student_id = None
-            best_iou = 0.0
-            
-            for track in student_tracks:
-                track_bbox = track.bbox
-                expanded_bbox = self._expand_bbox(track_bbox, self._config.roi_expansion)
-                
-                # Check if phone center is inside expanded student box
-                if self._point_in_bbox(phone_center, expanded_bbox):
-                    iou = self._calculate_iou(phone_bbox, expanded_bbox)
-                    if iou > best_iou and iou > self._config.association_iou:
-                        best_iou = iou
-                        best_student_id = track.track_id
-            
-            phone_det["student_track_id"] = best_student_id
-        
-        return phone_detections
-    
+
     def _expand_bbox(self, bbox: List[float], expansion: float) -> List[float]:
         """Expand bounding box by factor.
-        
+
         Args:
             bbox: Original bounding box.
             expansion: Expansion factor.
-            
+
         Returns:
             Expanded bounding box.
         """
         x1, y1, x2, y2 = bbox
         width = x2 - x1
         height = y2 - y1
-        
+
         x1_exp = x1 - width * expansion
         y1_exp = y1 - height * expansion
         x2_exp = x2 + width * expansion
         y2_exp = y2 + height * expansion
-        
+
         return [x1_exp, y1_exp, x2_exp, y2_exp]
-    
+
     def _point_in_bbox(self, point: List[float], bbox: List[float]) -> bool:
         """Check if point is inside bounding box.
-        
+
         Args:
             point: Point coordinates [x, y].
             bbox: Bounding box [x1, y1, x2, y2].
-            
+
         Returns:
             True if point is inside bbox.
         """
         x, y = point
         x1, y1, x2, y2 = bbox
         return x1 <= x <= x2 and y1 <= y <= y2
-    
+
     def _calculate_iou(self, bbox1: List[float], bbox2: List[float]) -> float:
         """Calculate IoU between two bounding boxes.
-        
+
         Args:
             bbox1: First bounding box.
             bbox2: Second bounding box.
-            
+
         Returns:
             IoU value.
         """
         x1_1, y1_1, x2_1, y2_1 = bbox1
         x1_2, y1_2, x2_2, y2_2 = bbox2
-        
+
         # Calculate intersection
         x1_i = max(x1_1, x1_2)
         y1_i = max(y1_1, y1_2)
         x2_i = min(x2_1, x2_2)
         y2_i = min(y2_1, y2_2)
-        
+
         if x2_i <= x1_i or y2_i <= y1_i:
             return 0.0
-        
+
         intersection_area = (x2_i - x1_i) * (y2_i - y1_i)
-        
+
         # Calculate union
         area1 = (x2_1 - x1_1) * (y2_1 - y1_1)
         area2 = (x2_2 - x1_2) * (y2_2 - y1_2)
         union_area = area1 + area2 - intersection_area
-        
+
         if union_area == 0:
             return 0.0
-        
+
         return intersection_area / union_area
-    
+
     def _run_roi_detection(
         self,
         frame: np.ndarray,
