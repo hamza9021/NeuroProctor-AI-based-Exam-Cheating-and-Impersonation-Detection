@@ -40,7 +40,7 @@ const App = () => {
                         <Route path="/exams" element={<Exam />} />
                         <Route path="/examSessions" element={<ExamSessionsList />} />
                     </Route>
-                    
+
                     <Route element={<InvigilatorProtectedRoute />}>
                         <Route
                             path="/invigilator/dashboard"
@@ -59,7 +59,7 @@ const App = () => {
                     <Route path="/exams/:examId" element={<ExamDetail />} />
                     <Route path="/examSessions/:sessionId" element={<ExamSessionDetail />} />
                 </Route>
-                
+
                 <Route path="/unauthorized" element={<Unauthorized />} />
             </Routes>
         </Router>
