@@ -209,12 +209,15 @@ class PhoneDetectionService:
             # Associate phones with students using the associator
             if student_tracks:
                 frame_height, frame_width = context.frame.shape[:2]
+                # Get poses from context if available
+                poses = getattr(context, 'poses', None)
                 phone_detections = self._associator.associate(
                     phone_detections,
                     student_tracks,
                     frame_width,
                     frame_height,
                     context.frame_number,
+                    poses,
                 )
                 logger.debug(f"Frame {context.frame_number}: Associated phone detections: {len(phone_detections)}")
             

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AssociationResult:
     """Result of phone-to-student association.
-    
+
     Attributes:
         student_track_id: Associated DeepSORT person track ID.
         association_score: Combined association score.
@@ -21,6 +21,8 @@ class AssociationResult:
         phone_area_overlap: Intersection over phone area.
         normal_iou: Normal IoU between boxes.
         centre_distance: Distance from phone centre to person centre.
+        wrist_distance: Distance to nearest wrist.
+        roi_source_match: Whether phone came from this person's ROI.
     """
     student_track_id: Optional[int]
     association_score: float
@@ -30,6 +32,8 @@ class AssociationResult:
     phone_area_overlap: float = 0.0
     normal_iou: float = 0.0
     centre_distance: float = 0.0
+    wrist_distance: float = 0.0
+    roi_source_match: bool = False
 
 
 class PhoneStudentAssociator:
@@ -71,19 +75,27 @@ class PhoneStudentAssociator:
         frame_width: int,
         frame_height: int,
         frame_number: int = 0,
+        poses: Optional[List] = None,
     ) -> List[dict]:
         """Associate phone detections with person tracks.
-        
+
         Args:
             phone_detections: List of phone detection dictionaries.
             person_tracks: List of DeepSORT person tracks.
             frame_width: Frame width.
             frame_height: Frame height.
             frame_number: Current frame number.
-            
+            poses: List of PoseResult objects with keypoints.
+
         Returns:
             List of phone detections with student_track_id added.
         """
+        # Build pose lookup by track_id
+        pose_lookup = {}
+        if poses:
+            for pose in poses:
+                if hasattr(pose, 'track_id'):
+                    pose_lookup[pose.track_id] = pose
         # Filter for confirmed person tracks or tracks with at least 1 hit
         # This allows association with new tracks before they're fully confirmed
         eligible_tracks = []
@@ -103,12 +115,15 @@ class PhoneStudentAssociator:
             # Calculate association with all person tracks
             results = []
             for track in eligible_tracks:
+                pose = pose_lookup.get(track.track_id)
                 result = self._calculate_association(
                     phone_bbox,
                     track.bbox,
                     track.track_id,
                     frame_width,
                     frame_height,
+                    pose,
+                    phone.get("source_student_track_id"),
                 )
                 if result.association_score > 0:
                     results.append(result)
@@ -213,73 +228,133 @@ class PhoneStudentAssociator:
         person_track_id: int,
         frame_width: int,
         frame_height: int,
+        pose: Optional = None,
+        source_student_track_id: Optional[int] = None,
     ) -> AssociationResult:
         """Calculate association score between phone and person.
-        
+
         Args:
             phone_bbox: Phone bounding box [x1, y1, x2, y2].
             person_bbox: Person bounding box [x1, y1, x2, y2].
             person_track_id: Person track ID.
             frame_width: Frame width.
             frame_height: Frame height.
-            
+            pose: PoseResult with keypoints for wrist distance.
+            source_student_track_id: ROI source track ID if phone came from ROI.
+
         Returns:
             AssociationResult with scoring details.
         """
+        # COCO keypoint indices
+        LEFT_WRIST = 9
+        RIGHT_WRIST = 10
+        LEFT_ELBOW = 7
+        RIGHT_ELBOW = 8
+
         # Calculate centres
         phone_center = self._get_center(phone_bbox)
         person_center = self._get_center(person_bbox)
-        
+
         # Calculate expanded person box
         expanded_person = self._expand_bbox(person_bbox, self._roi_expansion, frame_width, frame_height)
-        
+
         # Check if phone centre inside original person box
         center_inside = self._point_in_bbox(phone_center, person_bbox)
-        
+
         # Check if phone centre inside expanded person box
         expanded_center_inside = self._point_in_bbox(phone_center, expanded_person)
-        
+
         # Calculate IoU metrics
         normal_iou = self._calculate_iou(phone_bbox, expanded_person)
         phone_area_overlap = self._calculate_intersection_over_phone_area(phone_bbox, expanded_person)
-        
+
         # Calculate centre distance
         centre_distance = np.sqrt(
             (phone_center[0] - person_center[0])**2 +
             (phone_center[1] - person_center[1])**2
         )
-        
-        # Calculate combined score
+
+        # Calculate wrist distance if pose available
+        wrist_distance = float('inf')
+        has_valid_wrist = False
+        if pose and hasattr(pose, 'keypoints') and hasattr(pose, 'keypoint_confidences'):
+            keypoints = pose.keypoints
+            confidences = pose.keypoint_confidences
+
+            # Check left wrist
+            if len(keypoints) > LEFT_WRIST and len(confidences) > LEFT_WRIST:
+                if confidences[LEFT_WRIST] > 0.5:
+                    left_wrist = keypoints[LEFT_WRIST]
+                    dist = np.sqrt(
+                        (phone_center[0] - left_wrist[0])**2 +
+                        (phone_center[1] - left_wrist[1])**2
+                    )
+                    wrist_distance = min(wrist_distance, dist)
+                    has_valid_wrist = True
+
+            # Check right wrist
+            if len(keypoints) > RIGHT_WRIST and len(confidences) > RIGHT_WRIST:
+                if confidences[RIGHT_WRIST] > 0.5:
+                    right_wrist = keypoints[RIGHT_WRIST]
+                    dist = np.sqrt(
+                        (phone_center[0] - right_wrist[0])**2 +
+                        (phone_center[1] - right_wrist[1])**2
+                    )
+                    wrist_distance = min(wrist_distance, dist)
+                    has_valid_wrist = True
+
+        # Check ROI source match
+        roi_source_match = (source_student_track_id == person_track_id)
+
+        # Calculate combined score with priority ordering
         score = 0.0
         method = "unknown"
-        
+
+        # Priority 1: Wrist distance (strongest evidence)
+        if has_valid_wrist and wrist_distance < 100:  # 100px threshold
+            wrist_score = 1.0 - (wrist_distance / 100.0)
+            score += wrist_score * 2.0  # High weight for wrist proximity
+            method = "wrist_proximity"
+
+        # Priority 2: ROI source match
+        if roi_source_match:
+            score += 1.5
+            if method == "unknown":
+                method = "roi_source"
+            else:
+                method += "_and_roi_source"
+
+        # Priority 3: Phone centre inside original person bbox
         if center_inside:
             score += 1.0
-            method = "center_inside"
-        elif expanded_center_inside:
-            score += 0.8
-            method = "expanded_center_inside"
-        
+            if method == "unknown":
+                method = "center_inside"
+            else:
+                method += "_and_center_inside"
+
+        # Priority 4: Phone-area containment inside original person bbox
         if phone_area_overlap > self._association_iou:
             score += 0.7
             if method == "unknown":
                 method = "phone_area_overlap"
             else:
                 method += "_and_area_overlap"
-        
-        if normal_iou > self._association_iou:
-            score += 0.5
-        
-        # Distance score (inverse of distance)
+
+        # Priority 5: Normalized distance to person centre
         if centre_distance < self._max_centre_distance:
             distance_score = 1.0 - (centre_distance / self._max_centre_distance)
             score += distance_score * 0.3
             if method == "unknown":
                 method = "nearest_valid_student"
-        
+
+        # Priority 6: Expanded bbox only as weak fallback
+        if expanded_center_inside and method == "unknown":
+            score += 0.5
+            method = "expanded_center_inside"
+
         # Normalize score
         score = min(score, 1.0)
-        
+
         return AssociationResult(
             student_track_id=person_track_id,
             association_score=score,
@@ -289,6 +364,8 @@ class PhoneStudentAssociator:
             phone_area_overlap=phone_area_overlap,
             normal_iou=normal_iou,
             centre_distance=centre_distance,
+            wrist_distance=wrist_distance if has_valid_wrist else 0.0,
+            roi_source_match=roi_source_match,
         )
     
     def _should_switch_student(
